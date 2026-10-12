@@ -104,11 +104,47 @@ const RESIZE_HANDLES: { id: HandleId; xFrac: number; yFrac: number; cursor: stri
 // ── Product catalog ───────────────────────────────────────────────────────────
 const PRODUCT_INFO: Record<string, {
   name: string; brand: string; sku: string
-  type: 'tshirt' | 'longsleeve' | 'tank' | 'sweatshirt' | 'hoodie' | 'hoodie-zip' | 'jacket' | 'mug' | 'tote' | 'poster' | 'blanket' | 'pillow' | 'phone' | 'hat'
+  type: 'tshirt' | 'longsleeve' | 'tank' | 'sweatshirt' | 'hoodie' | 'hoodie-zip' | 'jacket' | 'mug' | 'tote' | 'poster' | 'blanket' | 'pillow' | 'phone' | 'hat' | 'polo'
+  isAOP?: boolean
   printAreaSize: string; costRange: string; baseCost: number; retailPrice: number
   printAreas: string[]
   colors: { name: string; hex: string; isHeather?: boolean }[]
 }> = {
+  'polo-sublimation': {
+    name: "All-Over Print Men's Short-Sleeve Polo Shirt",
+    brand: 'PrintFlow Choice',
+    sku: 'POLO-AOP-01',
+    type: 'polo',
+    isAOP: true,
+    printAreaSize: 'Cut & Sew (All 7 Panels)',
+    costRange: 'ETB 450–600',
+    baseCost: 480,
+    retailPrice: 850,
+    printAreas: [
+      'Front side',
+      'Back side',
+      'Right sleeve',
+      'Left sleeve',
+      'Collar',
+      'Undercollar',
+      'Placket',
+      'All areas (view only)',
+    ],
+    colors: [
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Black', hex: '#1A1A12' },
+      { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'Heather Grey', hex: '#C8C5C0' },
+      { name: 'Red', hex: '#C62828' },
+      { name: 'Forest Green', hex: '#2E4A2E' },
+      { name: 'Olive', hex: '#4A5E35' },
+      { name: 'Sage', hex: '#8FAF7A' },
+      { name: 'Pepper', hex: '#373435' },
+      { name: 'Chambray', hex: '#7799B5' },
+      { name: 'Seafoam', hex: '#8DB8A7' },
+      { name: 'Terracotta', hex: '#B86851' },
+    ],
+  },
   'tshirt-classic': {
     name: 'Unisex Crafter Organic Tee', brand: 'Stanley Stella', sku: 'STTU755',
     type: 'tshirt', printAreaSize: '12" × 16" (3600 × 4800 px)', costRange: 'ETB 280–380',
@@ -400,6 +436,16 @@ const PRODUCT_INFO: Record<string, {
 
 // ── Calibrated Print Area Boxes (Canvas px on a 500 × 560 stage) ──────────────
 const PRINT_AREA_SPECS: Record<string, Record<string, { left: number; top: number; w: number; h: number; label: string }>> = {
+  polo: {
+    'Front side':              { left: 145, top: 85,  w: 210, h: 375, label: 'Front Panel · Cut & Sew' },
+    'Back side':               { left: 145, top: 85,  w: 210, h: 375, label: 'Back Panel · Cut & Sew' },
+    'Right sleeve':            { left: 95,  top: 105, w: 310, h: 185, label: 'Right Sleeve Panel' },
+    'Left sleeve':             { left: 95,  top: 105, w: 310, h: 185, label: 'Left Sleeve Panel' },
+    'Collar':                  { left: 65,  top: 105, w: 370, h: 80,  label: 'Collar Band Panel' },
+    'Undercollar':             { left: 65,  top: 105, w: 370, h: 80,  label: 'Undercollar Panel' },
+    'Placket':                 { left: 145, top: 95,  w: 110, h: 260, label: 'Placket Button Strip' },
+    'All areas (view only)':    { left: 20,  top: 20,  w: 960, h: 480, label: 'All 7 Panels (Macro View)' },
+  },
   tshirt: {
     'Center chest': { left: 156, top: 145, w: 188, h: 240, label: 'Center Chest · 12" × 16"' },
     'Left chest':   { left: 275, top: 152, w: 74,  h: 74,  label: 'Left Chest (Pocket) · 4" × 4"' },
@@ -550,6 +596,11 @@ const PRODUCT_MOCKUP_SCENES: Record<string, MockupScene[]> = {
     { id: 'on-person',   label: 'Streetwear Model', viewType: 'model', photoId: '/mockups/model-male-torso-clean.jpg', printBox: { left: 34, top: 28, width: 32, height: 40 } },
     { id: 'size-chart',  label: 'Size Chart',     isChart: true, photoId: '', printBox: { left: 30, top: 30, width: 40, height: 40 } },
   ],
+  polo: [
+    { id: 'front',      label: 'Front Studio', viewType: 'flat-front', printBox: { left: 30, top: 24, width: 40, height: 48 } },
+    { id: 'back',       label: 'Back Studio',  viewType: 'flat-back',  printBox: { left: 30, top: 20, width: 40, height: 52 } },
+    { id: 'size-chart', label: 'Size Chart',   isChart: true, photoId: '', printBox: { left: 30, top: 30, width: 40, height: 40 } },
+  ],
   mug: [
     { id: 'front',        label: 'Front Studio',   viewType: 'flat-front', printBox: { left: 30, top: 30, width: 40, height: 40 } },
     { id: 'handle-left',  label: 'Handle Left',    viewType: 'flat-front', printBox: { left: 30, top: 30, width: 40, height: 40 } },
@@ -598,7 +649,7 @@ export default function ProductCreatorPage() {
   // State
   const [layers,          setLayers]          = useState<Layer[]>([])
   const [selectedId,      setSelectedId]      = useState<string | null>(null)
-  const [activePrintArea, setActivePrintArea] = useState(info.printAreas[0])
+  const [activePrintArea, setActivePrintArea] = useState(info.isAOP ? 'All areas (view only)' : info.printAreas[0])
   const [productColor,    setProductColor]    = useState(info.colors[0].hex)
   const [selectedSize,    setSelectedSize]    = useState('L')
   const [activeTab,       setActiveTab]       = useState<'edit' | 'preview'>('edit')
@@ -661,16 +712,25 @@ export default function ProductCreatorPage() {
   const printBox = currentProductAreas[activePrintArea] ?? Object.values(currentProductAreas)[0]
 
   // Map print area name to mockup view prop
-  const isSleeve = activePrintArea.toLowerCase().includes('sleeve')
-  const mockupView = activePrintArea.toLowerCase().includes('back')
-    ? 'back'
-    : isSleeve && activePrintArea.toLowerCase().includes('left')
-      ? 'sleeve_left'
-      : isSleeve && activePrintArea.toLowerCase().includes('right')
-        ? 'sleeve_right'
-        : activePrintArea.toLowerCase().includes('wrap')
-          ? 'wrap'
-          : 'front'
+  const normArea = activePrintArea.toLowerCase()
+  const isSleeve = normArea.includes('sleeve')
+  const mockupView = normArea.includes('all')
+    ? 'all'
+    : normArea.includes('under')
+      ? 'undercollar'
+      : normArea.includes('collar')
+        ? 'collar'
+        : normArea.includes('placket')
+          ? 'placket'
+          : normArea.includes('back')
+            ? 'back'
+            : isSleeve && normArea.includes('left')
+              ? 'sleeve_left'
+              : isSleeve && normArea.includes('right')
+                ? 'sleeve_right'
+                : normArea.includes('wrap')
+                  ? 'wrap'
+                  : 'front'
 
   const selected = layers.find(l => l.id === selectedId) ?? null
 
@@ -1889,24 +1949,35 @@ export default function ProductCreatorPage() {
                 }}
                 className="flex items-center justify-center">
 
-                {/* 500 × 560 Studio Canvas Stage */}
+                {/* Studio Canvas Stage */}
                 <div
                   ref={canvasRef}
-                  className="relative rounded-2xl overflow-visible"
-                  style={{ width: 500, height: 560 }}
+                  className="relative rounded-2xl overflow-visible transition-all duration-200"
+                  style={{
+                    width: activePrintArea.toLowerCase().includes('all') ? 780 : 500,
+                    height: activePrintArea.toLowerCase().includes('all') ? 405 : 560
+                  }}
                   onClick={() => setSelectedId(null)}>
 
                   {/* ── Photorealistic Raw Product Vector Mockup ── */}
-                  <div className="absolute inset-0 pointer-events-none">
+                  <div className={cn(
+                    'absolute inset-0',
+                    activePrintArea.toLowerCase().includes('all') ? 'pointer-events-auto' : 'pointer-events-none'
+                  )}>
                     <MockupComponent
                       color={productColor}
                       view={mockupView}
                       className="w-full h-full"
                       showPrintArea={false}
+                      onSelectArea={(area) => {
+                        setActivePrintArea(area)
+                        setSelectedId(null)
+                      }}
                     />
                   </div>
 
-                  {/* ── Calibrated Print Area Guide ── */}
+                  {/* ── Calibrated Print Area Guide (Hidden on All Areas Overview) ── */}
+                  {!activePrintArea.toLowerCase().includes('all') && (
                   <div
                     className="absolute pointer-events-none transition-all duration-200"
                     style={{
@@ -1946,6 +2017,7 @@ export default function ProductCreatorPage() {
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* ── Magnetic Alignment Snap Guides (Cyan Crosshairs) ── */}
                   {snapGuide.x != null && (
@@ -2495,66 +2567,92 @@ export default function ProductCreatorPage() {
                 </button>
               </div>
 
-              {/* Center 2-Pill Switcher (Exact Match to Printify Image 2) */}
-              <div className="flex items-center bg-white border border-[#E5E2DC] shadow-sm rounded-xl p-1 gap-1">
-                <button
-                  onClick={() => {
-                    setActivePrintArea(info.printAreas[0])
-                    setSelectedId(null)
-                  }}
-                  className={cn(
-                    'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                    activePrintArea === info.printAreas[0]
-                      ? 'bg-[#575C46] text-white shadow-xs'
-                      : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
-                  )}>
-                  <span>Front side</span>
-                  {layers.some(l => (l.view === info.printAreas[0] || l.view.includes('Front') || l.view.includes('Center') || l.view.includes('Chest')) && l.visible) && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  )}
-                </button>
-                <button
-                  onClick={() => {
-                    setActivePrintArea('Back')
-                    setSelectedId(null)
-                  }}
-                  className={cn(
-                    'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                    activePrintArea === 'Back'
-                      ? 'bg-[#575C46] text-white shadow-xs'
-                      : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
-                  )}>
-                  <span>Back side</span>
-                  {layers.some(l => (l.view === 'Back' || l.view.includes('Back')) && l.visible) && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  )}
-                </button>
-                {info.printAreas.length > 2 && (
-                  <div className="relative group">
-                    <button
-                      className="px-3 py-2 rounded-lg text-xs font-semibold text-[#6E6B65] hover:text-[#1A1A12] flex items-center gap-1 hover:bg-[#F5F4F0]">
-                      <span>More ({info.printAreas.length - 2})</span>
-                      <ChevronDown size={12} />
-                    </button>
-                    <div className="absolute bottom-full left-0 mb-1 hidden group-hover:flex flex-col bg-white border border-[#E5E2DC] rounded-xl shadow-lg p-1 min-w-[140px] z-30">
-                      {info.printAreas.slice(2).map(area => (
-                        <button
-                          key={area}
-                          onClick={() => {
-                            setActivePrintArea(area)
-                            setSelectedId(null)
-                          }}
-                          className={cn(
-                            'px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors',
-                            activePrintArea === area ? 'bg-[#575C46] text-white' : 'text-[#1A1A12] hover:bg-[#F5F4F0]'
-                          )}>
-                          {area}
-                        </button>
-                      ))}
+              {/* Center Multi-Pill Switcher (Exact Match to Printify Image 2) */}
+              {info.isAOP ? (
+                <div className="flex items-center bg-white border border-[#E5E2DC] shadow-sm rounded-xl p-1 gap-1 overflow-x-auto max-w-[780px]">
+                  {info.printAreas.map(area => {
+                    const isActive = activePrintArea.toLowerCase() === area.toLowerCase()
+                    const hasLayers = layers.some(l => l.view.toLowerCase() === area.toLowerCase() && l.visible)
+                    return (
+                      <button
+                        key={area}
+                        onClick={() => {
+                          setActivePrintArea(area)
+                          setSelectedId(null)
+                        }}
+                        className={cn(
+                          'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap flex items-center gap-1 shrink-0',
+                          isActive
+                            ? 'bg-[#575C46] text-white shadow-xs'
+                            : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white hover:bg-[#F5F4F0]'
+                        )}>
+                        <span>{area}</span>
+                        {hasLayers && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center bg-white border border-[#E5E2DC] shadow-sm rounded-xl p-1 gap-1">
+                  <button
+                    onClick={() => {
+                      setActivePrintArea(info.printAreas[0])
+                      setSelectedId(null)
+                    }}
+                    className={cn(
+                      'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                      activePrintArea === info.printAreas[0]
+                        ? 'bg-[#575C46] text-white shadow-xs'
+                        : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
+                    )}>
+                    <span>Front side</span>
+                    {layers.some(l => (l.view === info.printAreas[0] || l.view.includes('Front') || l.view.includes('Center') || l.view.includes('Chest')) && l.visible) && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActivePrintArea('Back')
+                      setSelectedId(null)
+                    }}
+                    className={cn(
+                      'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                      activePrintArea === 'Back'
+                        ? 'bg-[#575C46] text-white shadow-xs'
+                        : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
+                    )}>
+                    <span>Back side</span>
+                    {layers.some(l => (l.view === 'Back' || l.view.includes('Back')) && l.visible) && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    )}
+                  </button>
+                  {info.printAreas.length > 2 && (
+                    <div className="relative group">
+                      <button
+                        className="px-3 py-2 rounded-lg text-xs font-semibold text-[#6E6B65] hover:text-[#1A1A12] flex items-center gap-1 hover:bg-[#F5F4F0]">
+                        <span>More ({info.printAreas.length - 2})</span>
+                        <ChevronDown size={12} />
+                      </button>
+                      <div className="absolute bottom-full left-0 mb-1 hidden group-hover:flex flex-col bg-white border border-[#E5E2DC] rounded-xl shadow-lg p-1 min-w-[140px] z-30">
+                        {info.printAreas.slice(2).map(area => (
+                          <button
+                            key={area}
+                            onClick={() => {
+                              setActivePrintArea(area)
+                              setSelectedId(null)
+                            }}
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors',
+                              activePrintArea === area ? 'bg-[#575C46] text-white' : 'text-[#1A1A12] hover:bg-[#F5F4F0]'
+                            )}>
+                            {area}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Resolution & Print Quality Badge */}
               <div className="flex items-center gap-1.5 bg-white border border-[#E5E2DC] shadow-sm rounded-xl px-3 py-1.5 text-xs">

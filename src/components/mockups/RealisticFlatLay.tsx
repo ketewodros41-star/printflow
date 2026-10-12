@@ -726,6 +726,213 @@ export function RealisticLongSleeveFlatLay({
 
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   1C. REALISTIC POLO SHIRT (Unisex Performance Pique All-Over Print Polo)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+export const POLO_SUBLIMATION_FRONT_ASSETS: Record<string, string> = {
+  '#FFFFFF': '/mockups/polo-sublimation-front-white.png',
+  '#1A1A12': '/mockups/polo-sublimation-front-black.png',
+  '#1B2A4A': '/mockups/polo-sublimation-front-navy.png',
+  '#C8C5C0': '/mockups/polo-sublimation-front-heather-grey.png',
+  '#C62828': '/mockups/polo-sublimation-front-red.png',
+  '#2E4A2E': '/mockups/polo-sublimation-front-forest-green.png',
+  '#4A5E35': '/mockups/polo-sublimation-front-olive.png',
+  '#8FAF7A': '/mockups/polo-sublimation-front-sage.png',
+  '#373435': '/mockups/polo-sublimation-front-pepper.png',
+  '#7799B5': '/mockups/polo-sublimation-front-chambray.png',
+  '#8DB8A7': '/mockups/polo-sublimation-front-seafoam.png',
+  '#B86851': '/mockups/polo-sublimation-front-terracotta.png',
+}
+
+export const POLO_SUBLIMATION_BACK_ASSETS: Record<string, string> = {
+  '#FFFFFF': '/mockups/polo-sublimation-back-white.png',
+  '#1A1A12': '/mockups/polo-sublimation-back-black.png',
+  '#1B2A4A': '/mockups/polo-sublimation-back-navy.png',
+  '#C8C5C0': '/mockups/polo-sublimation-back-heather-grey.png',
+  '#C62828': '/mockups/polo-sublimation-back-red.png',
+  '#2E4A2E': '/mockups/polo-sublimation-back-forest-green.png',
+  '#4A5E35': '/mockups/polo-sublimation-back-olive.png',
+  '#8FAF7A': '/mockups/polo-sublimation-back-sage.png',
+  '#373435': '/mockups/polo-sublimation-back-pepper.png',
+  '#7799B5': '/mockups/polo-sublimation-back-chambray.png',
+  '#8DB8A7': '/mockups/polo-sublimation-back-seafoam.png',
+  '#B86851': '/mockups/polo-sublimation-back-terracotta.png',
+}
+
+export function RealisticPoloFlatLay({
+  color = '#FFFFFF',
+  view = 'front',
+  className = '',
+  colorMode = 'rgb',
+  layers = [],
+  printBox = { left: 152, top: 130, w: 196, h: 290 },
+  printMethod,
+  children,
+}: RealisticFlatLayProps) {
+  const id = useId().replace(/:/g, '')
+  const isBack = view === 'back'
+  const isDark = isColorDark(color)
+  const normColor = (color || '#FFFFFF').toUpperCase()
+
+  const directAsset = isBack
+    ? POLO_SUBLIMATION_BACK_ASSETS[normColor]
+    : POLO_SUBLIMATION_FRONT_ASSETS[normColor]
+
+  const cleanHex = normColor.replace('#', '')
+  const r = (parseInt(cleanHex.substring(0, 2), 16) || 255) / 255
+  const g = (parseInt(cleanHex.substring(2, 4), 16) || 255) / 255
+  const b = (parseInt(cleanHex.substring(4, 6), 16) || 255) / 255
+
+  const assetUrl = directAsset || (isBack ? '/mockups/polo-sublimation-back-white.png' : '/mockups/polo-sublimation-front-white.png')
+
+  // Target coordinates on 954 x 1024 polo canvas
+  const mainTargetBox = isBack
+    ? { x: 295, y: 200, width: 365, height: 530 }
+    : { x: 295, y: 240, width: 360, height: 490 }
+
+  const collarTargetBox = { x: 375, y: 65, width: 204, height: 160 }
+  const placketTargetBox = { x: 447, y: 180, width: 60, height: 210 }
+  const rightSleeveTargetBox = { x: 65, y: 170, width: 220, height: 260 }
+  const leftSleeveTargetBox = { x: 670, y: 170, width: 220, height: 260 }
+
+  // Filter layers by target panels
+  const mainLayers = layers.filter(l => {
+    const v = (l.view || 'front').toLowerCase()
+    return isBack
+      ? v.includes('back') || v === 'all'
+      : v.includes('front') || v.includes('chest') || v === 'all'
+  })
+
+  const collarLayers = !isBack ? layers.filter(l => (l.view || '').toLowerCase().includes('collar')) : []
+  const placketLayers = !isBack ? layers.filter(l => (l.view || '').toLowerCase().includes('placket')) : []
+  const rightSleeveLayers = layers.filter(l => (l.view || '').toLowerCase().includes('right'))
+  const leftSleeveLayers = layers.filter(l => (l.view || '').toLowerCase().includes('left'))
+
+  return (
+    <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
+      <svg
+        viewBox="0 0 954 1024"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full max-h-[580px] drop-shadow-[0_20px_28px_rgba(0,0,0,0.07)]"
+      >
+        <defs>
+          <PrintTechniqueSvgDefs id={id} />
+
+          {!directAsset && (
+            <filter id={`garment-tint-polo-${id}`} colorInterpolationFilters="sRGB">
+              <feColorMatrix
+                type="matrix"
+                values={`
+                  ${r.toFixed(3)} 0 0 0 0
+                  0 ${g.toFixed(3)} 0 0 0
+                  0 0 ${b.toFixed(3)} 0 0
+                  0 0 0 1 0
+                `}
+                result="baseDye"
+              />
+              <feComponentTransfer in="baseDye">
+                <feFuncR type="linear" slope="1.05" intercept="0.015" />
+                <feFuncG type="linear" slope="1.05" intercept="0.015" />
+                <feFuncB type="linear" slope="1.05" intercept="0.015" />
+              </feComponentTransfer>
+            </filter>
+          )}
+
+          <filter id={`polo-pique-mesh-${id}`} x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="piqueGrain" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0" result="meshAlpha" />
+            <feBlend mode="multiply" in="SourceGraphic" in2="meshAlpha" result="blended" />
+            <feComposite in="blended" in2="SourceAlpha" operator="in" />
+          </filter>
+        </defs>
+
+        {/* ── Studio Flat-Lay Photographic Blank (Authentic Pique Polo) ── */}
+        <image
+          href={assetUrl}
+          x="0"
+          y="0"
+          width="954"
+          height="1024"
+          preserveAspectRatio="xMidYMid meet"
+          filter={!directAsset ? `url(#garment-tint-polo-${id})` : undefined}
+        />
+
+        {/* ── Main Torso (Front or Back) Artwork Stage ── */}
+        <g
+          id="polo-main-stage"
+          filter={`url(#polo-pique-mesh-${id})`}
+          style={{
+            mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+            filter: 'contrast(1.04) saturate(1.02)',
+            opacity: isDark ? 0.98 : 1,
+          }}
+        >
+          {renderLayersInSvg(mainLayers, printBox, mainTargetBox, isBack ? 'back' : 'front', colorMode, id, printMethod)}
+        </g>
+
+        {/* ── Collar Artwork Projection (Front View) ── */}
+        {collarLayers.length > 0 && (
+          <g
+            id="polo-collar-stage"
+            filter={`url(#polo-pique-mesh-${id})`}
+            style={{
+              mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+              filter: 'contrast(1.04) saturate(1.02)',
+            }}
+          >
+            {renderLayersInSvg(collarLayers, printBox, collarTargetBox, 'collar', colorMode, id, printMethod)}
+          </g>
+        )}
+
+        {/* ── Placket Artwork Projection (Front View) ── */}
+        {placketLayers.length > 0 && (
+          <g
+            id="polo-placket-stage"
+            filter={`url(#polo-pique-mesh-${id})`}
+            style={{
+              mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+              filter: 'contrast(1.04) saturate(1.02)',
+            }}
+          >
+            {renderLayersInSvg(placketLayers, printBox, placketTargetBox, 'placket', colorMode, id, printMethod)}
+          </g>
+        )}
+
+        {/* ── Right Sleeve Projection ── */}
+        {rightSleeveLayers.length > 0 && (
+          <g
+            id="polo-right-sleeve-stage"
+            filter={`url(#polo-pique-mesh-${id})`}
+            style={{
+              mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+              filter: 'contrast(1.04) saturate(1.02)',
+            }}
+          >
+            {renderLayersInSvg(rightSleeveLayers, printBox, rightSleeveTargetBox, 'sleeve_right', colorMode, id, printMethod)}
+          </g>
+        )}
+
+        {/* ── Left Sleeve Projection ── */}
+        {leftSleeveLayers.length > 0 && (
+          <g
+            id="polo-left-sleeve-stage"
+            filter={`url(#polo-pique-mesh-${id})`}
+            style={{
+              mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+              filter: 'contrast(1.04) saturate(1.02)',
+            }}
+          >
+            {renderLayersInSvg(leftSleeveLayers, printBox, leftSleeveTargetBox, 'sleeve_left', colorMode, id, printMethod)}
+          </g>
+        )}
+
+        {children}
+      </svg>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    2. CLOSE-VIEW ON-PERSON MODEL (Matching Images 1 & 3)
    ═══════════════════════════════════════════════════════════════════════════════ */
 export function RealisticModelTorsoMockup({
@@ -2794,6 +3001,23 @@ export function RealisticProductPreview({
       >
         {children}
       </RealisticHoodieFlatLay>
+    )
+  }
+
+  // All-Over Print / Cut & Sew Polo Shirt
+  if (normType === 'polo' || normId.includes('polo')) {
+    return (
+      <RealisticPoloFlatLay
+        color={color}
+        view={isBack ? 'back' : 'front'}
+        colorMode={colorMode}
+        layers={layers}
+        printBox={printBox}
+        printMethod={printMethod}
+        className={className}
+      >
+        {children}
+      </RealisticPoloFlatLay>
     )
   }
 

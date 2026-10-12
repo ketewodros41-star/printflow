@@ -56,12 +56,29 @@ export interface CatalogProduct {
   rating: number
   department: 'men' | 'women' | 'unisex' | 'accessories' | 'home'
   category: 'T-Shirts' | 'Long Sleeves' | 'Tank Tops' | 'Sweatshirts' | 'Jackets' | 'Hoodies' | 'Hats' | 'Mugs' | 'Bags' | 'Home & Living'
-  type: 'tshirt' | 'longsleeve' | 'tank' | 'sweatshirt' | 'jacket' | 'hoodie' | 'hoodie-zip' | 'mug' | 'tote' | 'hat' | 'poster' | 'blanket' | 'pillow' | 'phone'
+  type: 'tshirt' | 'longsleeve' | 'tank' | 'sweatshirt' | 'jacket' | 'hoodie' | 'hoodie-zip' | 'mug' | 'tote' | 'hat' | 'poster' | 'blanket' | 'pillow' | 'phone' | 'polo'
   defaultColor: string
   fabricBadge?: string
 }
 
 const PRODUCTS: CatalogProduct[] = [
+  // ── POLO & SHORT SLEEVE AOP ──
+  {
+    id: 'polo-sublimation',
+    productId: 'polo-sublimation',
+    title: "All-Over Print Men's Short-Sleeve Polo Shirt",
+    brand: 'PrintFlow Choice', sku: 'POLO-AOP-01',
+    price: 480, pricePremium: 384,
+    sizes: 6, colors: 8,
+    colorHexes: ['#FFFFFF', '#1A1A12', '#1B2A4A', '#C8C5C0', '#C62828', '#2E4A2E', '#4A5E35', '#8FAF7A'],
+    providers: 3,
+    isChoice: true, isNew: true, rating: 4.95,
+    department: 'men',
+    category: 'T-Shirts',
+    type: 'polo',
+    defaultColor: '#FFFFFF',
+    fabricBadge: 'Cut & Sew Poly-Pique',
+  },
   // ── SHORT SLEEVE T-SHIRTS ──
   {
     id: 'tshirt-classic',

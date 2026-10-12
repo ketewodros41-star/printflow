@@ -15,6 +15,7 @@ export interface MockupProps {
   className?: string
   showPrintArea?: boolean
   children?: React.ReactNode
+  onSelectArea?: (area: string) => void
 }
 
 function isColorDark(hex: string): boolean {
@@ -1664,12 +1665,322 @@ export function LongSleeveMockup({
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   15. ALL-OVER PRINT CUT & SEW POLO SHIRT (7-Panel Multi-Cut Layout)
+   Exact match to Printify's AOP Cut & Sew Pattern Editor
+   ═══════════════════════════════════════════════════════════════════════════════ */
+export function PoloPatternMockup({
+  color = '#FFFFFF',
+  view = 'all',
+  className = '',
+  showPrintArea = true,
+  children,
+  onSelectArea,
+}: MockupProps) {
+  const normView = (view || 'all').toLowerCase()
+  const isAll = normView.includes('all')
+  const isFront = normView.includes('front') && !isAll
+  const isBack = normView.includes('back') && !isAll
+  const isRightSleeve = normView.includes('right') || normView.includes('sleeve_right')
+  const isLeftSleeve = (normView.includes('left') || normView.includes('sleeve_left')) && !isRightSleeve
+  const isUnderCollar = normView.includes('under')
+  const isCollar = normView.includes('collar') && !isUnderCollar
+  const isPlacket = normView.includes('placket')
+
+  // Theme styling matching Printify Image 2
+  const seamFill = '#BDC1C3'
+  const seamStroke = '#707478'
+  const pieceFill = color || '#FFFFFF'
+  const dashedStroke = '#4E5154'
+  const labelColor = '#1A1A12'
+
+  if (isAll) {
+    return (
+      <svg
+        viewBox="0 0 1000 520"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`select-none ${className}`}
+      >
+        <defs>
+          <filter id="aop-panel-shadow" x="-5%" y="-5%" width="110%" height="115%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.05" />
+          </filter>
+        </defs>
+
+        {/* ── 1. COLLAR (Top-Left Arched Band) ── */}
+        <g
+          id="panel-collar"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Collar')}
+        >
+          <path
+            d="M 40 108 C 85 88, 185 88, 230 108 L 225 132 C 180 115, 90 115, 45 132 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.2"
+          />
+          <path
+            d="M 48 110 C 88 94, 182 94, 222 110 L 218 128 C 178 117, 92 117, 52 128 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="135" y="152" textAnchor="middle" fontSize="11" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            COLLAR
+          </text>
+        </g>
+
+        {/* ── 2. UNDER COLLAR (Middle-Left Arched Band) ── */}
+        <g
+          id="panel-undercollar"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Undercollar')}
+        >
+          <path
+            d="M 40 208 C 85 188, 185 188, 230 208 L 225 232 C 180 215, 90 215, 45 232 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.2"
+          />
+          <path
+            d="M 48 210 C 88 194, 182 194, 222 210 L 218 228 C 178 217, 92 217, 52 228 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="135" y="252" textAnchor="middle" fontSize="11" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            UNDER COLLAR
+          </text>
+        </g>
+
+        {/* ── 3. PLACKET (Bottom-Left Vertical Strip with Buttons) ── */}
+        <g
+          id="panel-placket"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Placket')}
+        >
+          <rect x="110" y="295" width="50" height="70" rx="1.5" fill={seamFill} stroke={seamStroke} strokeWidth="1.2" />
+          <rect x="115" y="300" width="18" height="60" rx="1" fill={pieceFill} stroke={dashedStroke} strokeWidth="1.2" strokeDasharray="3 2" />
+          <rect x="137" y="300" width="18" height="60" rx="1" fill={pieceFill} stroke={dashedStroke} strokeWidth="1.2" strokeDasharray="3 2" />
+          <circle cx="124" cy="312" r="2.5" fill="none" stroke="#787C80" strokeWidth="1" />
+          <circle cx="124" cy="330" r="2.5" fill="none" stroke="#787C80" strokeWidth="1" />
+          <circle cx="124" cy="348" r="2.5" fill="none" stroke="#787C80" strokeWidth="1" />
+          <text x="135" y="382" textAnchor="middle" fontSize="11" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            PLACKET
+          </text>
+        </g>
+
+        {/* ── 4. FRONT (Center-Left Torso with Placket Notch) ── */}
+        <g
+          id="panel-front"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Front side')}
+        >
+          <path
+            d="M 290 110 L 335 95 C 342 110, 362 122, 368 122 L 368 185 L 378 185 L 378 122 C 384 122, 404 110, 411 95 L 456 110 C 445 135, 442 165, 452 185 L 485 185 L 485 365 L 260 365 L 260 185 L 293 185 C 303 165, 301 135, 290 110 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.4"
+          />
+          <path
+            d="M 298 116 L 333 103 C 344 118, 360 126, 365 126 L 365 180 L 381 180 L 381 126 C 386 126, 402 118, 413 103 L 448 116 C 438 138, 436 166, 444 180 L 468 180 L 468 355 L 277 355 L 277 180 L 301 180 C 309 166, 307 138, 298 116 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="372" y="392" textAnchor="middle" fontSize="12" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            FRONT
+          </text>
+        </g>
+
+        {/* ── 5. BACK (Center-Right Torso with High Neck Arch) ── */}
+        <g
+          id="panel-back"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Back side')}
+        >
+          <path
+            d="M 550 110 L 595 95 C 612 102, 658 102, 675 95 L 720 110 C 709 135, 706 165, 716 185 L 750 185 L 750 365 L 520 365 L 520 185 L 554 185 C 564 165, 561 135, 550 110 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.4"
+          />
+          <path
+            d="M 558 116 L 593 103 C 612 108, 658 108, 677 103 L 712 116 C 702 138, 700 166, 708 180 L 733 180 L 733 355 L 537 355 L 537 180 L 562 180 C 570 166, 568 138, 558 116 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="635" y="392" textAnchor="middle" fontSize="12" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            BACK
+          </text>
+        </g>
+
+        {/* ── 6. RIGHT SLEEVE (Top-Right Curved Bell) ── */}
+        <g
+          id="panel-right-sleeve"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Right sleeve')}
+        >
+          <path
+            d="M 785 150 C 795 125, 835 90, 875 90 C 915 90, 955 125, 965 150 L 955 178 L 795 178 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.3"
+          />
+          <path
+            d="M 798 147 C 808 128, 838 98, 875 98 C 912 98, 942 128, 952 147 L 945 170 L 805 170 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="875" y="198" textAnchor="middle" fontSize="11" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            RIGHT SLEEVE
+          </text>
+        </g>
+
+        {/* ── 7. LEFT SLEEVE (Bottom-Right Curved Bell) ── */}
+        <g
+          id="panel-left-sleeve"
+          className="cursor-pointer transition-all hover:opacity-90"
+          onClick={() => onSelectArea?.('Left sleeve')}
+        >
+          <path
+            d="M 785 330 C 795 305, 835 270, 875 270 C 915 270, 955 305, 965 330 L 955 358 L 795 358 Z"
+            fill={seamFill}
+            stroke={seamStroke}
+            strokeWidth="1.3"
+          />
+          <path
+            d="M 798 327 C 808 308, 838 278, 875 278 C 912 278, 942 308, 952 327 L 945 350 L 805 350 Z"
+            fill={pieceFill}
+            stroke={dashedStroke}
+            strokeWidth="1.2"
+            strokeDasharray="3 3"
+          />
+          <text x="875" y="378" textAnchor="middle" fontSize="11" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+            LEFT SLEEVE
+          </text>
+        </g>
+
+        {children}
+      </svg>
+    )
+  }
+
+  // Single-Panel Focused Views
+  if (isFront || isBack) {
+    return (
+      <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path
+          d={
+            isFront
+              ? 'M 140 70 L 195 50 C 205 70, 235 88, 245 88 L 245 160 L 255 160 L 255 88 C 265 88, 295 70, 305 50 L 360 70 C 345 105, 340 145, 355 170 L 395 170 L 395 490 L 105 490 L 105 170 L 145 170 C 160 145, 155 105, 140 70 Z'
+              : 'M 140 70 L 195 50 C 215 62, 285 62, 305 50 L 360 70 C 345 105, 340 145, 355 170 L 395 170 L 395 490 L 105 490 L 105 170 L 145 170 C 160 145, 155 105, 140 70 Z'
+          }
+          fill={seamFill}
+          stroke={seamStroke}
+          strokeWidth="1.5"
+        />
+        <path
+          d={
+            isFront
+              ? 'M 152 78 L 192 62 C 208 82, 232 94, 240 94 L 240 152 L 260 152 L 260 94 C 268 94, 292 82, 308 62 L 348 78 C 336 108, 332 144, 342 165 L 372 165 L 372 475 L 128 475 L 128 165 L 158 165 C 168 144, 164 108, 152 78 Z'
+              : 'M 152 78 L 192 62 C 215 72, 285 72, 308 62 L 348 78 C 336 108, 332 144, 342 165 L 372 165 L 372 475 L 128 475 L 128 165 L 158 165 C 168 144, 164 108, 152 78 Z'
+          }
+          fill={pieceFill}
+          stroke={dashedStroke}
+          strokeWidth="1.4"
+          strokeDasharray="4 3"
+        />
+        <text x="250" y="525" textAnchor="middle" fontSize="13" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+          {isFront ? 'FRONT PANEL' : 'BACK PANEL'}
+        </text>
+        {children}
+      </svg>
+    )
+  }
+
+  if (isRightSleeve || isLeftSleeve) {
+    const isRight = isRightSleeve
+    return (
+      <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path
+          d="M 60 220 C 85 160, 180 80, 250 80 C 320 80, 415 160, 440 220 L 415 320 L 85 320 Z"
+          fill={seamFill}
+          stroke={seamStroke}
+          strokeWidth="1.5"
+        />
+        <path
+          d="M 85 215 C 105 168, 185 96, 250 96 C 315 96, 395 168, 415 215 L 395 300 L 105 300 Z"
+          fill={pieceFill}
+          stroke={dashedStroke}
+          strokeWidth="1.4"
+          strokeDasharray="4 3"
+        />
+        <text x="250" y="360" textAnchor="middle" fontSize="13" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+          {isRight ? 'RIGHT SLEEVE PANEL' : 'LEFT SLEEVE PANEL'}
+        </text>
+        {children}
+      </svg>
+    )
+  }
+
+  if (isCollar || isUnderCollar) {
+    return (
+      <svg viewBox="0 0 500 320" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path
+          d="M 40 140 C 130 95, 370 95, 460 140 L 445 200 C 360 160, 140 160, 55 200 Z"
+          fill={seamFill}
+          stroke={seamStroke}
+          strokeWidth="1.5"
+        />
+        <path
+          d="M 60 145 C 140 106, 360 106, 440 145 L 430 190 C 352 160, 148 160, 70 190 Z"
+          fill={pieceFill}
+          stroke={dashedStroke}
+          strokeWidth="1.4"
+          strokeDasharray="4 3"
+        />
+        <text x="250" y="240" textAnchor="middle" fontSize="13" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+          {isCollar ? 'COLLAR PANEL' : 'UNDER COLLAR PANEL'}
+        </text>
+        {children}
+      </svg>
+    )
+  }
+
+  // Placket
+  return (
+    <svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <rect x="130" y="80" width="140" height="300" rx="3" fill={seamFill} stroke={seamStroke} strokeWidth="1.5" />
+      <rect x="145" y="95" width="50" height="270" rx="2" fill={pieceFill} stroke={dashedStroke} strokeWidth="1.4" strokeDasharray="4 3" />
+      <rect x="205" y="95" width="50" height="270" rx="2" fill={pieceFill} stroke={dashedStroke} strokeWidth="1.4" strokeDasharray="4 3" />
+      <circle cx="170" cy="140" r="7" fill="none" stroke="#787C80" strokeWidth="1.5" />
+      <circle cx="170" cy="220" r="7" fill="none" stroke="#787C80" strokeWidth="1.5" />
+      <circle cx="170" cy="300" r="7" fill="none" stroke="#787C80" strokeWidth="1.5" />
+      <text x="200" y="420" textAnchor="middle" fontSize="13" fontWeight="bold" fill={labelColor} letterSpacing="0.5">
+        PLACKET PANEL
+      </text>
+      {children}
+    </svg>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    EXPORT MAP & UNIFIED PRODUCT MOCKUP WITH ARTWORK
    ═══════════════════════════════════════════════════════════════════════════════ */
 export const MOCKUP_MAP: Record<string, React.FC<MockupProps>> = {
   tshirt: TShirtMockup,
   longsleeve: LongSleeveMockup,
   'tshirt-longsleeve': LongSleeveMockup,
+  polo: PoloPatternMockup,
+  'polo-sublimation': PoloPatternMockup,
   tank: TankMockup,
   'tank-muscle': TankMockup,
   sweatshirt: SweatshirtMockup,
@@ -1719,6 +2030,19 @@ const ARTWORK_VIEW_BOXES: Record<string, Record<string, { x: number; y: number; 
     'back collar': { x: 215, y: 95, w: 70, h: 70 },
     'sleeve left': { x: 190, y: 135, w: 120, h: 130 },
     'sleeve right': { x: 190, y: 135, w: 120, h: 130 },
+  },
+  polo: {
+    'all areas (view only)': { x: 20, y: 20, w: 960, h: 480 },
+    'all': { x: 20, y: 20, w: 960, h: 480 },
+    'front side': { x: 140, y: 70, w: 220, h: 380 },
+    'front': { x: 140, y: 70, w: 220, h: 380 },
+    'back side': { x: 140, y: 70, w: 220, h: 380 },
+    'back': { x: 140, y: 70, w: 220, h: 380 },
+    'right sleeve': { x: 100, y: 100, w: 300, h: 220 },
+    'left sleeve': { x: 100, y: 100, w: 300, h: 220 },
+    collar: { x: 70, y: 100, w: 360, h: 100 },
+    undercollar: { x: 70, y: 100, w: 360, h: 100 },
+    placket: { x: 140, y: 90, w: 120, h: 280 },
   },
   tank: {
     front: { x: 165, y: 165, w: 170, h: 220 },
@@ -1793,7 +2117,7 @@ const ARTWORK_VIEW_BOXES: Record<string, Record<string, { x: number; y: number; 
 }
 
 export interface ProductMockupWithArtProps {
-  type: 'tshirt' | 'longsleeve' | 'tshirt-longsleeve' | 'tank' | 'tank-muscle' | 'sweatshirt' | 'hoodie' | 'hoodie-zip' | 'jacket' | 'mug' | 'tote' | 'hat' | 'poster' | 'blanket' | 'pillow' | 'phone'
+  type: 'tshirt' | 'longsleeve' | 'tshirt-longsleeve' | 'polo' | 'polo-sublimation' | 'tank' | 'tank-muscle' | 'sweatshirt' | 'hoodie' | 'hoodie-zip' | 'jacket' | 'mug' | 'tote' | 'hat' | 'poster' | 'blanket' | 'pillow' | 'phone'
   color?: string
   view?: string
   artworkUrl?: string
