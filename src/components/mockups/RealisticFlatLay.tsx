@@ -687,16 +687,18 @@ export function RealisticLongSleeveFlatLay({
         </g>
 
         {/* Authentic Fabric Fold & Lighting Crease Overlay (Printify Physical Integration) */}
-        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.08}>
-          <image
-            href={isBack ? '/mockups/longsleeve-flatlay-back-white.png' : '/mockups/longsleeve-flatlay-white.png'}
-            x="0"
-            y="0"
-            width="1024"
-            height="953"
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </g>
+        {layers.length > 0 && (
+          <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.12} clipPath={`url(#ls-print-clip-${id})`}>
+            <image
+              href={assetUrl}
+              x="0"
+              y="0"
+              width="1024"
+              height="953"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </g>
+        )}
 
         {children}
       </svg>
