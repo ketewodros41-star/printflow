@@ -366,6 +366,22 @@ const TSHIRT_FLATLAY_ASSETS: Record<string, string> = {
   '#B86851': '/mockups/tshirt-flatlay-terracotta.png',
 }
 
+const TSHIRT_BACK_ASSETS: Record<string, string> = {
+  '#FFFFFF': '/mockups/tshirt-flatlay-back-white.png',
+  '#1A1A12': '/mockups/tshirt-flatlay-back-black.png',
+  '#1B2A4A': '/mockups/tshirt-flatlay-back-navy.png',
+  '#C8C5C0': '/mockups/tshirt-flatlay-back-heather-grey.png',
+  '#9A9A8E': '/mockups/tshirt-flatlay-back-heather-grey.png',
+  '#C62828': '/mockups/tshirt-flatlay-back-red.png',
+  '#2E4A2E': '/mockups/tshirt-flatlay-back-forest-green.png',
+  '#4A5E35': '/mockups/tshirt-flatlay-back-olive.png',
+  '#8FAF7A': '/mockups/tshirt-flatlay-back-sage.png',
+  '#373435': '/mockups/tshirt-flatlay-back-pepper.png',
+  '#7799B5': '/mockups/tshirt-flatlay-back-chambray.png',
+  '#8DB8A7': '/mockups/tshirt-flatlay-back-seafoam.png',
+  '#B86851': '/mockups/tshirt-flatlay-back-terracotta.png',
+}
+
 export function RealisticTShirtFlatLay({
   color = '#FFFFFF',
   view = 'front',
@@ -382,7 +398,7 @@ export function RealisticTShirtFlatLay({
   const normColor = (color || '#FFFFFF').toUpperCase()
 
   const directAsset = isBack
-    ? '/mockups/tshirt-flatlay-studio-back.png'
+    ? TSHIRT_BACK_ASSETS[normColor]
     : TSHIRT_FLATLAY_ASSETS[normColor]
 
   const cleanHex = normColor.replace('#', '')
@@ -391,7 +407,7 @@ export function RealisticTShirtFlatLay({
   const b = (parseInt(cleanHex.substring(4, 6), 16) || 255) / 255
 
   // Direct high-res photographic blank when available, or high-res white flat-lay dynamically tinted
-  const assetUrl = directAsset || (isBack ? '/mockups/tshirt-flatlay-studio-back.png' : '/mockups/tshirt-flatlay-white.png')
+  const assetUrl = directAsset || (isBack ? '/mockups/tshirt-flatlay-back-white.png' : '/mockups/tshirt-flatlay-white.png')
 
   const targetChest = isBack
     ? { x: 310, y: 200, width: 365, height: 500 }
@@ -409,9 +425,9 @@ export function RealisticTShirtFlatLay({
           {/* Physical print & embroidery shaders */}
           <PrintTechniqueSvgDefs id={id} />
 
-          {/* Dynamic photographic fabric tinting for custom garment colors */}
-          {!directAsset && !isBack && (
-            <filter id={`garment-tint-${id}`} colorInterpolationFilters="sRGB">
+          {/* Dynamic photographic fabric tinting for custom garment colors (Front & Back) */}
+          {!directAsset && (
+            <filter id={`garment-tint-tshirt-${id}`} colorInterpolationFilters="sRGB">
               <feColorMatrix
                 type="matrix"
                 values={`
@@ -438,7 +454,7 @@ export function RealisticTShirtFlatLay({
           y="0"
           width="985"
           height="1024"
-          filter={!directAsset && !isBack ? `url(#garment-tint-${id})` : undefined}
+          filter={!directAsset ? `url(#garment-tint-tshirt-${id})` : undefined}
         />
 
         {/* ── Artwork Projected Directly Inside SVG Vector Space (Authentic Technique Finish) ── */}
@@ -452,16 +468,18 @@ export function RealisticTShirtFlatLay({
           {renderLayersInSvg(layers, printBox, targetChest, view, colorMode, id, printMethod)}
         </g>
 
-        {/* Authentic Fabric Fold & Lighting Crease Overlay */}
-        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.15}>
-          <image
-            href={assetUrl}
-            x="0"
-            y="0"
-            width="985"
-            height="1024"
-          />
-        </g>
+        {/* Authentic Fabric Fold & Lighting Crease Overlay (Printify Physical Integration) */}
+        {layers.length > 0 && (
+          <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.12}>
+            <image
+              href={assetUrl}
+              x="0"
+              y="0"
+              width="985"
+              height="1024"
+            />
+          </g>
+        )}
       </svg>
 
       {/* Optional custom children overlay */}
