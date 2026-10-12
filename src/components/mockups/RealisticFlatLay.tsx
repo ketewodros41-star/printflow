@@ -613,7 +613,7 @@ export function RealisticLongSleeveFlatLay({
         viewBox={viewBox}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full max-h-[580px]"
+        className="w-full h-full max-h-[580px] drop-shadow-[0_18px_26px_rgba(0,0,0,0.06)]"
       >
         <defs>
           <PrintTechniqueSvgDefs id={id} />
@@ -662,30 +662,19 @@ export function RealisticLongSleeveFlatLay({
           </clipPath>
         </defs>
 
-        {/* Studio Floor Soft Contact Shadows */}
+        {/* Studio Floor Soft Contact Shadows (Subtle, authentic Printify standard) */}
         <ellipse
           cx="512"
-          cy="806"
-          rx="260"
-          ry="9"
+          cy="801"
+          rx="230"
+          ry="5"
           fill="#000000"
-          opacity={isDark ? 0.22 : 0.08}
-          filter="blur(7px)"
+          opacity={0.06}
+          filter="blur(5px)"
         />
-        <ellipse
-          cx="512"
-          cy="814"
-          rx="340"
-          ry="18"
-          fill="#000000"
-          opacity={isDark ? 0.14 : 0.04}
-          filter="blur(16px)"
-        />
-        {/* Left & Right Cuff Floor Shadows (Accurately Centered Under Wrists) */}
-        <ellipse cx="130" cy="694" rx="36" ry="7" fill="#000000" opacity={isDark ? 0.20 : 0.07} filter="blur(6px)" />
-        <ellipse cx="130" cy="698" rx="46" ry="12" fill="#000000" opacity={isDark ? 0.12 : 0.04} filter="blur(12px)" />
-        <ellipse cx="898" cy="694" rx="36" ry="7" fill="#000000" opacity={isDark ? 0.20 : 0.07} filter="blur(6px)" />
-        <ellipse cx="898" cy="698" rx="46" ry="12" fill="#000000" opacity={isDark ? 0.12 : 0.04} filter="blur(12px)" />
+        {/* Left & Right Cuff Contact Shadows (Tight against wrists) */}
+        <ellipse cx="125" cy="688" rx="28" ry="4" fill="#000000" opacity={0.05} filter="blur(4px)" />
+        <ellipse cx="899" cy="688" rx="28" ry="4" fill="#000000" opacity={0.05} filter="blur(4px)" />
 
         {/* Photographic Long Sleeve Garment Blank (Pristine isolated photographic canvas) */}
         <image
@@ -712,7 +701,7 @@ export function RealisticLongSleeveFlatLay({
         </g>
 
         {/* Authentic Fabric Fold & Lighting Crease Overlay (Printify Physical Integration) */}
-        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.15}>
+        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.10}>
           <image
             href={assetUrl}
             x="0"
