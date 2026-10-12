@@ -1,0 +1,302 @@
+// This is the Prisma schema for PrintFlow
+// Run: npx prisma generate && npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ─────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  avatarUrl     String?
+  passwordHash  String?
+  role          Role      @default(MERCHANT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  merchant      Merchant?
+  sessions      Session[]
+}
+
+enum Role {
+  MERCHANT
+  ADMIN
+  PROVIDER
+  SUPPORT
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Merchant ─────────────────────────────────────────────
+
+model Merchant {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  storeName String
+  storeSlug String   @unique
+  plan      PlanTier @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products  Product[]
+  stores    Store[]
+  orders    Order[]
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  BUSINESS
+  ENTERPRISE
+}
+
+// ─── Catalog ──────────────────────────────────────────────
+
+model CatalogProduct {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  brand       String
+  sku         String   @unique
+  categoryId  String
+  printMethod String   // DTG | EMBROIDERY | SUBLIMATION | SCREEN_PRINT
+  isChoice    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  category    Category      @relation(fields: [categoryId], references: [id])
+  variants    CatalogVariant[]
+  printAreas  PrintArea[]
+  products    Product[]
+}
+
+model Category {
+  id       String           @id @default(cuid())
+  name     String           @unique
+  slug     String           @unique
+  icon     String?
+  products CatalogProduct[]
+}
+
+model CatalogVariant {
+  id             String         @id @default(cuid())
+  catalogId      String
+  size           String
+  color          String
+  colorHex       String
+  productionCost Float          // ETB
+  stock          StockStatus    @default(IN_STOCK)
+
+  catalog        CatalogProduct @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  merchantVariants MerchantVariant[]
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+model PrintArea {
+  id        String         @id @default(cuid())
+  name      String         // front | back | sleeve_left | etc.
+  widthMm   Int
+  heightMm  Int
+  productId String
+
+  product   CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// ─── Merchant Products ────────────────────────────────────
+
+model Product {
+  id              String        @id @default(cuid())
+  merchantId      String
+  catalogProductId String
+  title           String
+  description     String?
+  status          ProductStatus @default(DRAFT)
+  mockupUrls      String[]
+  externalId      String?       // ID in connected store
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  merchant        Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  catalogProduct  CatalogProduct @relation(fields: [catalogProductId], references: [id])
+  variants        MerchantVariant[]
+  designs         Design[]
+  orderItems      OrderItem[]
+}
+
+enum ProductStatus {
+  DRAFT
+  READY
+  PUBLISHING
+  PUBLISHED
+  PAUSED
+  ARCHIVED
+}
+
+model MerchantVariant {
+  id              String         @id @default(cuid())
+  productId       String
+  catalogVariantId String
+  retailPrice     Float          // ETB set by merchant
+  isEnabled       Boolean        @default(true)
+
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  catalogVariant  CatalogVariant @relation(fields: [catalogVariantId], references: [id])
+}
+
+model Design {
+  id          String   @id @default(cuid())
+  productId   String
+  printAreaId String
+  elementsJson String  // JSON-serialized DesignElement[]
+  mockupUrl   String?
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// ─── Stores ───────────────────────────────────────────────
+
+model Store {
+  id          String    @id @default(cuid())
+  merchantId  String
+  name        String
+  type        StoreType
+  url         String?
+  isConnected Boolean   @default(false)
+  credentials String?   // encrypted JSON
+  connectedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  orders      Order[]
+}
+
+enum StoreType {
+  HOSTED
+  SHOPIFY
+  ETSY
+  WOOCOMMERCE
+  AMAZON
+  TIKTOK
+  MANUAL
+}
+
+// ─── Orders ───────────────────────────────────────────────
+
+model Order {
+  id             String        @id @default(cuid())
+  orderNumber    String        @unique
+  merchantId     String
+  storeId        String?
+  status         OrderStatus   @default(PENDING)
+  paymentMethod  PaymentMethod
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentRef     String?
+  subtotal       Float
+  shippingTotal  Float
+  totalAmount    Float
+  currency       String        @default("ETB")
+  providerId     String?
+  trackingNumber String?
+  carrier        String?
+  // Shipping address (denormalized for order snapshot)
+  shipFullName   String
+  shipPhone      String
+  shipEmail      String
+  shipAddress1   String
+  shipAddress2   String?
+  shipCity       String
+  shipRegion     String
+  shipCountry    String        @default("Ethiopia")
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  merchant       Merchant      @relation(fields: [merchantId], references: [id])
+  store          Store?        @relation(fields: [storeId], references: [id])
+  provider       PrintProvider? @relation(fields: [providerId], references: [id])
+  items          OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  IMPORTED
+  PROCESSING
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentMethod {
+  CHAPA
+  MPESA
+  TELEBIRR
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  variantLabel    String   // "M / Black"
+  quantity        Int
+  unitPrice       Float
+  productionCost  Float
+  shippingCost    Float
+  mockupUrl       String?
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+}
+
+// ─── Print Providers ──────────────────────────────────────
+
+model PrintProvider {
+  id               String   @id @default(cuid())
+  name             String
+  location         String
+  rating           Float    @default(0)
+  avgProductionDays Float   @default(2)
+  avgShippingDays  Float    @default(4)
+  printMethods     String[]
+  apiEndpoint      String?
+  apiKeyEncrypted  String?
+  isActive         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  orders           Order[]
+}
