@@ -140,29 +140,61 @@ for item in PALETTE:
     cv2.imwrite(out_path, rgba)
     print(f"Saved {out_path}")
 
-# 4. Generate Back Blanks (White Base + Full Studio Palette)
-print("Generating back blanks for full studio palette...")
-white_back_r = np.copy(white[:, :, 2]).astype(np.float32)
-white_back_g = np.copy(white[:, :, 1]).astype(np.float32)
-white_back_b = np.copy(white[:, :, 0]).astype(np.float32)
-white_back_a = np.copy(master_alpha).astype(np.float32)
+# 4. Generate Back Blanks from True Photographic Reference Image
+print("Generating back blanks from authentic photographic back reference...")
+back_source_path = 'scripts/source-longsleeve-back.png'
+if not os.path.exists(back_source_path):
+    back_source_path = 'C:/Users/Davea/.gemini/antigravity/brain/437b513a-73e0-4e4b-92bb-e5583cd97c04/.user_uploaded/media_1791821587066_48ab0d93.png'
 
-# Fill collar opening with rear neckline ribbing
-for y in range(118, 172):
-    for x in range(445, 580):
-        dx = (x - 512) / 65.0
-        dy = (y - 138) / 30.0
-        if dx*dx + dy*dy < 1.0:
-            white_back_r[y, x] = float(white[128, x, 2])
-            white_back_g[y, x] = float(white[128, x, 1])
-            white_back_b[y, x] = float(white[128, x, 0])
-            white_back_a[y, x] = 1.0
+im_back = cv2.imread(back_source_path)
+h_b, w_b = im_back.shape[:2]
 
-# Shading map for back blank
-white_back_gray = (0.299 * white_back_r + 0.587 * white_back_g + 0.114 * white_back_b) / 255.0
-p98_back = np.percentile(white_back_gray[white_back_a > 0.5], 98)
-S_back = np.clip(white_back_gray / p98_back, 0.0, 1.25)
-S_back = np.power(S_back, 1.05)
+# 4.1 Extract mathematically pristine sub-pixel alpha mask from authentic back photograph
+diff_b = np.max(255 - im_back.astype(np.int32), axis=2).astype(np.float32)
+# Smoothstep curve between background edge (diff 3.0) and solid fabric (diff 8.5)
+t_b = np.clip((diff_b - 3.0) / 5.5, 0.0, 1.0)
+alpha_b_raw = t_b * t_b * (3.0 - 2.0 * t_b)
+
+# Solid core for interior fabric
+core_b = (diff_b >= 6.0).astype(np.uint8)
+kernel_b = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+core_b_filled = cv2.morphologyEx(core_b, cv2.MORPH_CLOSE, kernel_b)
+contours_b, _ = cv2.findContours(core_b_filled, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+solid_b_mask = np.zeros_like(core_b_filled)
+cv2.drawContours(solid_b_mask, contours_b, -1, 1, thickness=cv2.FILLED)
+
+alpha_b_combined = np.where(solid_b_mask > 0, np.maximum(alpha_b_raw, 0.98), alpha_b_raw)
+alpha_b_combined[:35, :] = 0.0
+alpha_b_combined[798:, :] = 0.0
+
+# 4.2 Scale & Align to master 953 x 1024 studio canvas (matching front garment 929px width)
+scale_b = 929.0 / 1014.0
+scaled_w_b = int(round(w_b * scale_b))
+scaled_h_b = int(round(h_b * scale_b))
+
+im_b_scaled = cv2.resize(im_back, (scaled_w_b, scaled_h_b), interpolation=cv2.INTER_LANCZOS4)
+alpha_b_scaled = cv2.resize(alpha_b_combined, (scaled_w_b, scaled_h_b), interpolation=cv2.INTER_LANCZOS4)
+
+master_back_rgb = np.full((h_w, w_w, 3), 255, dtype=np.uint8)
+master_back_alpha = np.zeros((h_w, w_w), dtype=np.float32)
+
+offset_x_b = (w_w - scaled_w_b) // 2
+collar_y_in_scaled = int(round(56.0 * scale_b))
+offset_y_b = 118 - collar_y_in_scaled # Back collar sits naturally flush at y=118
+
+master_back_rgb[offset_y_b:offset_y_b+scaled_h_b, offset_x_b:offset_x_b+scaled_w_b] = im_b_scaled
+master_back_alpha[offset_y_b:offset_y_b+scaled_h_b, offset_x_b:offset_x_b+scaled_w_b] = alpha_b_scaled
+
+master_back_alpha[master_back_alpha < 0.015] = 0.0
+master_back_alpha[:, :35] = 0.0
+master_back_alpha[:, 985:] = 0.0
+master_back_alpha[:105, :] = 0.0
+master_back_alpha[815:, :] = 0.0
+master_back_alpha = cv2.GaussianBlur(master_back_alpha, (3, 3), 0.4)
+
+# 4.3 Authentic Shading Map from Photographic Back View
+white_back_gray = cv2.cvtColor(master_back_rgb, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
+S_back = np.clip(white_back_gray / 0.94, 0.04, 1.20)
 
 for item in PALETTE:
     back_name = item['name'].replace('longsleeve-flatlay-', 'longsleeve-flatlay-back-')
@@ -190,27 +222,29 @@ for item in PALETTE:
         b_out += sheen
 
     if item['hex'] == '#FFFFFF':
-        r_final = np.uint8(np.clip(white_back_r, 0, 255))
-        g_final = np.uint8(np.clip(white_back_g, 0, 255))
-        b_final = np.uint8(np.clip(white_back_b, 0, 255))
+        # Pure white shirt: preserve authentic photographic original
+        r_final = np.uint8(np.clip(master_back_rgb[:, :, 2], 0, 255))
+        g_final = np.uint8(np.clip(master_back_rgb[:, :, 1], 0, 255))
+        b_final = np.uint8(np.clip(master_back_rgb[:, :, 0], 0, 255))
     else:
         r_final = np.uint8(np.clip(r_out * 255.0, 0, 255))
         g_final = np.uint8(np.clip(g_out * 255.0, 0, 255))
         b_final = np.uint8(np.clip(b_out * 255.0, 0, 255))
 
-    a_final = np.uint8(np.clip(white_back_a * 255.0, 0, 255))
+    a_final = np.uint8(np.clip(master_back_alpha * 255.0, 0, 255))
     rgba = cv2.merge([b_final, g_final, r_final, a_final])
     out_path = os.path.join(out_dir, back_name)
     cv2.imwrite(out_path, rgba)
 
 # Default fallback white back blank
 default_back = cv2.merge([
-    np.uint8(np.clip(white_back_b, 0, 255)),
-    np.uint8(np.clip(white_back_g, 0, 255)),
-    np.uint8(np.clip(white_back_r, 0, 255)),
-    np.uint8(np.clip(white_back_a * 255.0, 0, 255))
+    np.uint8(np.clip(master_back_rgb[:, :, 0], 0, 255)),
+    np.uint8(np.clip(master_back_rgb[:, :, 1], 0, 255)),
+    np.uint8(np.clip(master_back_rgb[:, :, 2], 0, 255)),
+    np.uint8(np.clip(master_back_alpha * 255.0, 0, 255))
 ])
 cv2.imwrite(os.path.join(out_dir, 'longsleeve-flatlay-back.png'), default_back)
 print("Saved public/mockups/longsleeve-flatlay-back.png and all colorway back blanks!")
 print("Full Studio Palette (Front & Back) rendered successfully!")
+
 

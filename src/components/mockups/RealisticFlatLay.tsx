@@ -649,6 +649,17 @@ export function RealisticLongSleeveFlatLay({
             <feBlend mode="multiply" in="SourceGraphic" in2="textureGrain" result="blended" />
             <feComposite in="blended" in2="SourceAlpha" operator="in" />
           </filter>
+
+          {/* Garment Body Clipping Mask: strictly bounds artwork within garment boundaries and prevents leaks above collar ribbing */}
+          <clipPath id={`ls-print-clip-${id}`}>
+            <rect
+              x={targetChest.x - 30}
+              y={isBack ? 165 : 175}
+              width={targetChest.width + 60}
+              height={targetChest.height + 70}
+              rx="12"
+            />
+          </clipPath>
         </defs>
 
         {/* Studio Floor Soft Contact Shadows */}
@@ -691,6 +702,7 @@ export function RealisticLongSleeveFlatLay({
         <g
           id="ls-artwork-stage"
           filter={`url(#ls-cotton-weave-${id})`}
+          clipPath={`url(#ls-print-clip-${id})`}
           style={{
             mixBlendMode: 'normal',
             filter: 'contrast(1.02) saturate(1.02)',
