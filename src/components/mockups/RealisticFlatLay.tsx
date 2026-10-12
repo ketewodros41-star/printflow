@@ -669,12 +669,12 @@ export function RealisticLongSleeveFlatLay({
           rx="230"
           ry="5"
           fill="#000000"
-          opacity={0.06}
+          opacity={0.05}
           filter="blur(5px)"
         />
         {/* Left & Right Cuff Contact Shadows (Tight against wrists) */}
-        <ellipse cx="125" cy="688" rx="28" ry="4" fill="#000000" opacity={0.05} filter="blur(4px)" />
-        <ellipse cx="899" cy="688" rx="28" ry="4" fill="#000000" opacity={0.05} filter="blur(4px)" />
+        <ellipse cx="120" cy="690" rx="26" ry="4" fill="#000000" opacity={0.04} filter="blur(4px)" />
+        <ellipse cx="904" cy="690" rx="26" ry="4" fill="#000000" opacity={0.04} filter="blur(4px)" />
 
         {/* Photographic Long Sleeve Garment Blank (Pristine isolated photographic canvas) */}
         <image
@@ -701,9 +701,9 @@ export function RealisticLongSleeveFlatLay({
         </g>
 
         {/* Authentic Fabric Fold & Lighting Crease Overlay (Printify Physical Integration) */}
-        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.10}>
+        <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.08}>
           <image
-            href={assetUrl}
+            href={isBack ? '/mockups/longsleeve-flatlay-back-white.png' : '/mockups/longsleeve-flatlay-white.png'}
             x="0"
             y="0"
             width="1024"
