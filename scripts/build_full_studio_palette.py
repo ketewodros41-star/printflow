@@ -140,12 +140,12 @@ for item in PALETTE:
     cv2.imwrite(out_path, rgba)
     print(f"Saved {out_path}")
 
-# 4. Generate Back Blank
-print("Generating longsleeve-flatlay-back.png...")
-white_back_r = np.copy(white[:, :, 2])
-white_back_g = np.copy(white[:, :, 1])
-white_back_b = np.copy(white[:, :, 0])
-white_back_a = np.copy(master_alpha)
+# 4. Generate Back Blanks (White Base + Full Studio Palette)
+print("Generating back blanks for full studio palette...")
+white_back_r = np.copy(white[:, :, 2]).astype(np.float32)
+white_back_g = np.copy(white[:, :, 1]).astype(np.float32)
+white_back_b = np.copy(white[:, :, 0]).astype(np.float32)
+white_back_a = np.copy(master_alpha).astype(np.float32)
 
 # Fill collar opening with rear neckline ribbing
 for y in range(118, 172):
@@ -153,18 +153,64 @@ for y in range(118, 172):
         dx = (x - 512) / 65.0
         dy = (y - 138) / 30.0
         if dx*dx + dy*dy < 1.0:
-            white_back_r[y, x] = white[128, x, 2]
-            white_back_g[y, x] = white[128, x, 1]
-            white_back_b[y, x] = white[128, x, 0]
+            white_back_r[y, x] = float(white[128, x, 2])
+            white_back_g[y, x] = float(white[128, x, 1])
+            white_back_b[y, x] = float(white[128, x, 0])
             white_back_a[y, x] = 1.0
 
-back_rgba = cv2.merge([
-    white_back_b,
-    white_back_g,
-    white_back_r,
+# Shading map for back blank
+white_back_gray = (0.299 * white_back_r + 0.587 * white_back_g + 0.114 * white_back_b) / 255.0
+p98_back = np.percentile(white_back_gray[white_back_a > 0.5], 98)
+S_back = np.clip(white_back_gray / p98_back, 0.0, 1.25)
+S_back = np.power(S_back, 1.05)
+
+for item in PALETTE:
+    back_name = item['name'].replace('longsleeve-flatlay-', 'longsleeve-flatlay-back-')
+    print(f"Rendering BACK {item['name']} ({item['hex']}) -> {back_name}...")
+    hex_clean = item['hex'].replace('#', '')
+    r_val = int(hex_clean[0:2], 16) / 255.0
+    g_val = int(hex_clean[2:4], 16) / 255.0
+    b_val = int(hex_clean[4:6], 16) / 255.0
+
+    gamma = item.get('gamma', 1.2)
+    S_mod = np.power(S_back, gamma)
+    if item.get('isHeather', False):
+        marl_strength = item.get('marl', 0.05)
+        S_mod = np.clip(S_mod + heather_noise * marl_strength, 0.05, 1.25)
+
+    r_out = r_val * S_mod
+    g_out = g_val * S_mod
+    b_out = b_val * S_mod
+
+    sheen_strength = item.get('sheen', 0.0)
+    if sheen_strength > 0:
+        sheen = np.power(np.clip((white_back_gray - 0.85) / 0.15, 0.0, 1.0), 2.0) * sheen_strength
+        r_out += sheen
+        g_out += sheen
+        b_out += sheen
+
+    if item['hex'] == '#FFFFFF':
+        r_final = np.uint8(np.clip(white_back_r, 0, 255))
+        g_final = np.uint8(np.clip(white_back_g, 0, 255))
+        b_final = np.uint8(np.clip(white_back_b, 0, 255))
+    else:
+        r_final = np.uint8(np.clip(r_out * 255.0, 0, 255))
+        g_final = np.uint8(np.clip(g_out * 255.0, 0, 255))
+        b_final = np.uint8(np.clip(b_out * 255.0, 0, 255))
+
+    a_final = np.uint8(np.clip(white_back_a * 255.0, 0, 255))
+    rgba = cv2.merge([b_final, g_final, r_final, a_final])
+    out_path = os.path.join(out_dir, back_name)
+    cv2.imwrite(out_path, rgba)
+
+# Default fallback white back blank
+default_back = cv2.merge([
+    np.uint8(np.clip(white_back_b, 0, 255)),
+    np.uint8(np.clip(white_back_g, 0, 255)),
+    np.uint8(np.clip(white_back_r, 0, 255)),
     np.uint8(np.clip(white_back_a * 255.0, 0, 255))
 ])
-cv2.imwrite(os.path.join(out_dir, 'longsleeve-flatlay-back.png'), back_rgba)
-print("Saved public/mockups/longsleeve-flatlay-back.png")
+cv2.imwrite(os.path.join(out_dir, 'longsleeve-flatlay-back.png'), default_back)
+print("Saved public/mockups/longsleeve-flatlay-back.png and all colorway back blanks!")
+print("Full Studio Palette (Front & Back) rendered successfully!")
 
-print("All 16 Master Blanks rendered successfully!")

@@ -219,6 +219,23 @@ export function renderLayersInSvg(
             <defs>
               <path id={arcPathId} d={arcD} fill="none" />
             </defs>
+            {/* 3D Thread contact shadow for raised stitch relief */}
+            {(method === 'embroidery' || method === 'chenille') && (
+              <text
+                fill="#000000"
+                opacity={0.35}
+                fontFamily={l.fontFamily ?? 'Inter'}
+                fontSize={fontSize}
+                fontWeight={l.bold ? 'bold' : 'normal'}
+                fontStyle={l.italic ? 'italic' : 'normal'}
+                letterSpacing={l.letterSpacing ? l.letterSpacing * scaleFactor : 0}
+                transform="translate(0.6, 0.9)"
+              >
+                <textPath href={`#${arcPathId}`} startOffset="50%" textAnchor="middle">
+                  {l.text}
+                </textPath>
+              </text>
+            )}
             {/* Primary Text Layer */}
             <text
               fill={l.color ?? '#000000'}
@@ -266,6 +283,23 @@ export function renderLayersInSvg(
 
       return (
         <g key={l.id} transform={transform} opacity={l.opacity ?? 1} filter={filterAttr}>
+          {/* 3D Thread contact shadow for raised stitch relief */}
+          {(method === 'embroidery' || method === 'chenille') && (
+            <text
+              x={textX + 0.6}
+              y={textY + 0.9}
+              textAnchor={anchor}
+              fill="#000000"
+              opacity={0.35}
+              fontFamily={l.fontFamily ?? 'Inter'}
+              fontSize={fontSize}
+              fontWeight={l.bold ? 'bold' : 'normal'}
+              fontStyle={l.italic ? 'italic' : 'normal'}
+              letterSpacing={l.letterSpacing ? l.letterSpacing * scaleFactor : 0}
+            >
+              {l.text}
+            </text>
+          )}
           {/* Main Typography Layer */}
           <text
             x={textX}
@@ -476,6 +510,30 @@ const LONGSLEEVE_FLATLAY_ASSETS: Record<string, string> = {
   '#DEDEDB': '/mockups/longsleeve-flatlay-ash.png',
 }
 
+const LONGSLEEVE_BACK_ASSETS: Record<string, string> = {
+  '#FFFFFF': '/mockups/longsleeve-flatlay-back-white.png',
+  '#C8C5C0': '/mockups/longsleeve-flatlay-back-grey.png',
+  '#9A9A8E': '/mockups/longsleeve-flatlay-back-grey.png',
+  '#D6ED17': '/mockups/longsleeve-flatlay-back-neon.png',
+  '#DEDE00': '/mockups/longsleeve-flatlay-back-neon.png',
+  '#18181B': '/mockups/longsleeve-flatlay-back-black.png',
+  '#1A1A12': '/mockups/longsleeve-flatlay-back-black.png',
+  '#1B2A4A': '/mockups/longsleeve-flatlay-back-navy.png',
+  '#C62828': '/mockups/longsleeve-flatlay-back-red.png',
+  '#1B4332': '/mockups/longsleeve-flatlay-back-forest-green.png',
+  '#2E4A2E': '/mockups/longsleeve-flatlay-back-forest-green.png',
+  '#5C1D24': '/mockups/longsleeve-flatlay-back-maroon.png',
+  '#1D4ED8': '/mockups/longsleeve-flatlay-back-royal.png',
+  '#D4C5B3': '/mockups/longsleeve-flatlay-back-sand.png',
+  '#4B5320': '/mockups/longsleeve-flatlay-back-military-green.png',
+  '#4A5E35': '/mockups/longsleeve-flatlay-back-military-green.png',
+  '#EA580C': '/mockups/longsleeve-flatlay-back-orange.png',
+  '#7BAED1': '/mockups/longsleeve-flatlay-back-carolina-blue.png',
+  '#7799B5': '/mockups/longsleeve-flatlay-back-carolina-blue.png',
+  '#4A4A48': '/mockups/longsleeve-flatlay-back-dark-heather.png',
+  '#DEDEDB': '/mockups/longsleeve-flatlay-back-ash.png',
+}
+
 export function RealisticLongSleeveFlatLay({
   color = '#FFFFFF',
   view = 'front',
@@ -529,7 +587,7 @@ export function RealisticLongSleeveFlatLay({
 
   // Photographic Studio Flat Lay Blank
   const directAsset = isBack
-    ? '/mockups/longsleeve-flatlay-back.png'
+    ? (LONGSLEEVE_BACK_ASSETS[normColor] || '/mockups/longsleeve-flatlay-back.png')
     : LONGSLEEVE_FLATLAY_ASSETS[normColor]
 
   const cleanHex = normColor.replace('#', '')
@@ -561,7 +619,7 @@ export function RealisticLongSleeveFlatLay({
           <PrintTechniqueSvgDefs id={id} />
 
           {/* Dynamic textile tinting with highlight preservation for custom hex colors */}
-          {!directAsset && !isBack && (
+          {!directAsset && (
             <filter id={`garment-tint-ls-${id}`} colorInterpolationFilters="sRGB">
               <feColorMatrix
                 type="matrix"
@@ -626,7 +684,7 @@ export function RealisticLongSleeveFlatLay({
           width="1024"
           height="953"
           preserveAspectRatio="xMidYMid meet"
-          filter={!directAsset && !isBack ? `url(#garment-tint-ls-${id})` : undefined}
+          filter={!directAsset ? `url(#garment-tint-ls-${id})` : undefined}
         />
 
         {/* Artwork Projection Stage (With Physical Print & Embroidery Finishes) */}

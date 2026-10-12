@@ -26,6 +26,30 @@ import {
   PrintMethod,
 } from '@/components/mockups/RealisticFlatLay'
 import { SAMPLE_GRAPHICS, GraphicItem } from '@/lib/sampleGraphics'
+import { SAMPLE_TEMPLATES, DesignTemplate } from '@/lib/sampleTemplates'
+
+const PRINTIFY_FONTS = [
+  { name: 'Impact', family: 'Impact, sans-serif' },
+  { name: 'Oswald', family: 'Oswald, sans-serif' },
+  { name: 'Bebas Neue', family: '"Bebas Neue", sans-serif' },
+  { name: 'Inter', family: 'Inter, sans-serif' },
+  { name: 'Montserrat', family: 'Montserrat, sans-serif' },
+  { name: 'Roboto Condensed', family: '"Roboto Condensed", sans-serif' },
+  { name: 'Playfair Display', family: '"Playfair Display", serif' },
+  { name: 'Merriweather', family: 'Merriweather, serif' },
+  { name: 'Abril Fatface', family: '"Abril Fatface", serif' },
+  { name: 'Pacifico', family: 'Pacifico, cursive' },
+  { name: 'Lobster', family: 'Lobster, cursive' },
+  { name: 'Dancing Script', family: '"Dancing Script", cursive' },
+  { name: 'Caveat', family: 'Caveat, cursive' },
+  { name: 'Permanent Marker', family: '"Permanent Marker", cursive' },
+  { name: 'Righteous', family: 'Righteous, cursive' },
+  { name: 'Fredoka One', family: '"Fredoka One", cursive' },
+  { name: 'Anton', family: 'Anton, sans-serif' },
+  { name: 'Raleway', family: 'Raleway, sans-serif' },
+  { name: 'Courier Prime', family: '"Courier Prime", monospace' },
+  { name: 'VT323', family: 'VT323, monospace' },
+]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Layer {
@@ -596,6 +620,9 @@ export default function ProductCreatorPage() {
   const [snapGuide,       setSnapGuide]       = useState<{ x: number | null; y: number | null }>({ x: null, y: null })
   const [graphicCategory, setGraphicCategory] = useState<string>('All')
   const [graphicSearch,   setGraphicSearch]   = useState<string>('')
+  const [templateCategory, setTemplateCategory] = useState<string>('All')
+  const [templateSearch,   setTemplateSearch]   = useState<string>('')
+  const [showColorPopover, setShowColorPopover] = useState<boolean>(false)
   const [activePrintMethod, setActivePrintMethod] = useState<PrintMethod>('dtg')
   const [previewPrintMethod, setPreviewPrintMethod] = useState<'auto' | PrintMethod>('auto')
 
@@ -830,6 +857,37 @@ export default function ProductCreatorPage() {
       naturalHeight: 2400,
       printMethod: item.defaultPrintMethod || activePrintMethod || 'dtg',
     })
+  }
+
+  // Quick application of complete multi-layered design template (Printify-parity)
+  const handleApplyTemplate = (tpl: DesignTemplate) => {
+    const newLayers: Layer[] = tpl.layers.map((tl, idx) => ({
+      id: `l-${Date.now()}-${idx}`,
+      type: tl.type,
+      text: tl.text,
+      src: tl.src,
+      view: activePrintArea,
+      x: Math.round(printBox.left + tl.relX * printBox.w),
+      y: Math.round(printBox.top + tl.relY * printBox.h),
+      width: Math.round(tl.relWidth * printBox.w),
+      height: Math.round(tl.relHeight * printBox.h),
+      rotation: tl.rotation || 0,
+      fontSize: tl.fontSize,
+      fontFamily: tl.fontFamily,
+      color: tl.color,
+      bold: tl.bold,
+      italic: tl.italic,
+      align: tl.align,
+      arc: tl.arc,
+      letterSpacing: tl.letterSpacing,
+      printMethod: tl.printMethod || activePrintMethod || 'dtg',
+      visible: true,
+    }))
+    const remaining = layers.filter(l => l.view !== activePrintArea)
+    const next = [...remaining, ...newLayers]
+    setLayers(next)
+    pushHistory(next)
+    if (newLayers.length > 0) setSelectedId(newLayers[0].id)
   }
 
   // ── Drag / Resize / Rotate Handlers with Magnetic Snapping ──────────────────
@@ -1114,11 +1172,12 @@ export default function ProductCreatorPage() {
 
   // ── Left toolbar definitions ────────────────────────────────────────────────
   const TOOLS = [
-    { id: 'upload',   icon: Upload,     label: 'Upload' },
-    { id: 'graphics', icon: Shapes,     label: 'Graphics' },
-    { id: 'text',     icon: Type,       label: 'Add text' },
-    { id: 'ai',       icon: Sparkles,   label: 'AI Create' },
-    { id: 'layers',   icon: LayersIcon, label: 'Layers' },
+    { id: 'upload',    icon: Upload,       label: 'Upload' },
+    { id: 'templates', icon: BookTemplate, label: 'Templates' },
+    { id: 'graphics',  icon: Shapes,       label: 'Graphics' },
+    { id: 'text',      icon: Type,         label: 'Add text' },
+    { id: 'ai',        icon: Sparkles,     label: 'AI Create' },
+    { id: 'layers',    icon: LayersIcon,   label: 'Layers' },
   ]
 
   return (
@@ -1313,6 +1372,113 @@ export default function ProductCreatorPage() {
               </div>
             )}
 
+            {/* 1B. Templates Library (Printify Pre-Made Compositions) */}
+            {activeTool === 'templates' && (() => {
+              const categories = ['All', 'Vintage', 'Streetwear', 'Athletics', 'Coffee & Culture', 'Minimal', 'Sewed & Chenille']
+              const filteredTemplates = SAMPLE_TEMPLATES.filter(tpl => {
+                const matchesCat = templateCategory === 'All' || tpl.category.toLowerCase() === templateCategory.toLowerCase()
+                const matchesSearch = !templateSearch.trim() ||
+                  tpl.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+                  tpl.category.toLowerCase().includes(templateSearch.toLowerCase()) ||
+                  tpl.description.toLowerCase().includes(templateSearch.toLowerCase())
+                const matchesPlaceholder = tpl.placeholder === 'both' ||
+                  (activePrintArea.toLowerCase().includes('back') ? tpl.placeholder === 'back' : tpl.placeholder === 'front')
+                return matchesCat && matchesSearch && matchesPlaceholder
+              })
+
+              return (
+                <div className="p-4 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-[#1A1A12]">Design Templates</h3>
+                      <p className="text-[11px] text-[#8C8880] mt-0.5">Ready-made layouts for {activePrintArea}</p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32]">
+                      1-Click Apply
+                    </span>
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-[#8C8880] absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={templateSearch}
+                      onChange={e => setTemplateSearch(e.target.value)}
+                      placeholder="Search templates (vintage, tour, script)..."
+                      className="w-full pl-8 pr-7 py-1.5 text-xs bg-[#FAF9F6] border border-[#E5E2DC] rounded-lg focus:outline-none focus:border-[#1A1A12] text-[#1A1A12] placeholder-[#A8A49C]"
+                    />
+                    {templateSearch && (
+                      <button
+                        onClick={() => setTemplateSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8C8880] hover:text-[#1A1A12]"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Category Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
+                    {categories.map(cat => {
+                      const active = templateCategory === cat
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setTemplateCategory(cat)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-full font-medium whitespace-nowrap transition-all cursor-pointer',
+                            active
+                              ? 'bg-[#1A1A12] text-white shadow-xs'
+                              : 'bg-[#F2EFE9] text-[#636059] hover:bg-[#E8E4DC] hover:text-[#1A1A12]'
+                          )}
+                        >
+                          {cat}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Template Cards */}
+                  {filteredTemplates.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-[#8C8880]">
+                      No templates found for "{templateSearch}".
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                      {filteredTemplates.map(tpl => (
+                        <div
+                          key={tpl.id}
+                          className="border border-[#E5E2DC] hover:border-[#1A1A12] rounded-xl p-3 bg-white hover:shadow-md transition-all flex flex-col gap-2.5"
+                        >
+                          <div className="w-full h-32 rounded-lg overflow-hidden flex items-center justify-center bg-[#FAF9F6] p-1 border border-[#EBE8E3]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={tpl.thumbnailSvg} alt={tpl.name} className="w-full h-full object-contain" />
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-[#1A1A12] truncate">{tpl.name}</span>
+                              <span className="text-[9px] font-semibold text-[#575C46] bg-[#575C46]/10 px-1.5 py-0.5 rounded">
+                                {tpl.category}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#78756E] mt-0.5 line-clamp-2">{tpl.description}</p>
+                          </div>
+                          <button
+                            onClick={() => handleApplyTemplate(tpl)}
+                            className="w-full py-1.5 bg-[#1A1A12] hover:bg-[#2A2A22] text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                          >
+                            <Sparkles size={12} className="text-amber-400" />
+                            <span>Apply to {activePrintArea}</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+
             {/* 2. Graphics Library */}
             {activeTool === 'graphics' && (() => {
               const categories = ['All', 'Sewed & Chenille', 'Streetwear', 'Outdoor', 'Retro', 'Culture', 'Athletics', 'Japanese', 'Minimal', 'Coffee']
@@ -1332,7 +1498,7 @@ export default function ProductCreatorPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-[#1A1A12]">Vector Graphics Library</h3>
-                      <p className="text-[11px] text-[#8C8880] mt-0.5">24 Print-ready vector designs</p>
+                      <p className="text-[11px] text-[#8C8880] mt-0.5">{SAMPLE_GRAPHICS.length} Print-ready vector designs</p>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F5E9] text-[#2E7D32]">
                       100% Vector
@@ -1380,28 +1546,28 @@ export default function ProductCreatorPage() {
                     })}
                   </div>
 
-                  {/* Graphics Grid */}
+                  {/* Graphics Grid (Clean 3-column layout) */}
                   {filteredGraphics.length === 0 ? (
                     <div className="py-8 text-center text-xs text-[#8C8880]">
                       No graphics found for "{graphicSearch}".
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2.5 max-h-[500px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-3 gap-2 max-h-[500px] overflow-y-auto pr-1">
                       {filteredGraphics.map(item => (
                         <button
                           key={item.id}
                           onClick={() => handleAddSampleGraphic(item)}
-                          className="group border border-[#E5E2DC] hover:border-[#1A1A12] rounded-xl p-2.5 text-left bg-white hover:shadow-md transition-all flex flex-col items-center cursor-pointer"
+                          className="group border border-[#E5E2DC] hover:border-[#1A1A12] rounded-xl p-1.5 text-left bg-white hover:shadow-md transition-all flex flex-col items-center cursor-pointer"
                         >
-                          <div className="w-24 h-24 rounded-lg overflow-hidden flex items-center justify-center bg-[#FAF9F6] group-hover:scale-105 transition-transform p-1.5">
+                          <div className="w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center bg-[#FAF9F6] group-hover:scale-105 transition-transform p-1">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={item.previewUrl} alt={item.name} className="w-full h-full object-contain" />
                           </div>
-                          <span className="text-[11px] font-bold text-[#1A1A12] text-center mt-2 line-clamp-1 w-full">
+                          <span className="text-[10px] font-bold text-[#1A1A12] text-center mt-1.5 line-clamp-1 w-full">
                             {item.name}
                           </span>
-                          <span className="text-[9px] font-semibold text-[#8C8880] uppercase tracking-wider mt-0.5">
-                            {item.category}
+                          <span className="text-[8px] font-semibold text-[#8C8880] uppercase tracking-wider mt-0.5 truncate w-full text-center">
+                            {item.defaultPrintMethod === 'embroidery' ? '🧵 Sewed' : item.defaultPrintMethod === 'chenille' ? '🧶 Chenille' : item.category}
                           </span>
                         </button>
                       ))}
@@ -1768,10 +1934,15 @@ export default function ProductCreatorPage() {
 
                     {/* Center empty state watermark */}
                     {currentViewLayers.length === 0 && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <div className="text-[11px] font-bold text-blue-600 bg-white/80 px-3 py-1 rounded-full shadow-sm">
-                          Print area
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-3 text-center">
+                        <div className="text-[11px] font-bold text-blue-600 bg-white/95 px-3 py-1 rounded-full shadow-sm border border-blue-100">
+                          {activePrintArea} print area
                         </div>
+                        {activePrintArea.toLowerCase().includes('back') && (
+                          <div className="mt-2 text-[10px] font-semibold text-[#5C5A55] bg-white/95 px-3 py-1.5 rounded-lg border border-blue-200 shadow-2xs max-w-[220px] leading-snug">
+                            Back of shirt — Click Add text, Templates, or Graphics to design the back.
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1956,6 +2127,145 @@ export default function ProductCreatorPage() {
                               width: 1, height: 26, background: '#2563EB',
                               transform: 'translate(-50%, -100%)', pointerEvents: 'none',
                             }} />
+
+                            {/* ── Printify Floating Typography Toolbar (Docked Above Text Layer) ── */}
+                            {layer.type === 'text' && (
+                              <div
+                                onMouseDown={e => e.stopPropagation()}
+                                style={{
+                                  position: 'absolute',
+                                  left: '50%',
+                                  top: -82,
+                                  transform: 'translateX(-50%)',
+                                }}
+                                className="bg-[#1A1A12] text-white rounded-2xl shadow-2xl p-1.5 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap z-40 border border-white/20 select-none backdrop-blur-md"
+                              >
+                                {/* 1. Font Family Picker with live typography */}
+                                <select
+                                  value={layer.fontFamily || 'Inter'}
+                                  onChange={e => updateLayer(layer.id, { fontFamily: e.target.value })}
+                                  className="bg-[#2A2A22] text-white text-[11px] font-bold px-2 py-1 rounded-lg border border-white/20 focus:outline-none cursor-pointer max-w-[105px] truncate"
+                                  title="Font Family"
+                                >
+                                  {PRINTIFY_FONTS.map(f => (
+                                    <option key={f.name} value={f.name} style={{ fontFamily: f.family }}>
+                                      {f.name}
+                                    </option>
+                                  ))}
+                                </select>
+
+                                {/* 2. Font Size Stepper */}
+                                <div className="flex items-center bg-[#2A2A22] rounded-lg border border-white/20 px-1 py-0.5">
+                                  <button
+                                    onClick={() => updateLayer(layer.id, { fontSize: Math.max(10, (layer.fontSize || 28) - 2) })}
+                                    className="px-1 text-white/70 hover:text-white font-bold"
+                                    title="Decrease size"
+                                  >
+                                    -
+                                  </button>
+                                  <input
+                                    type="number"
+                                    value={layer.fontSize || 28}
+                                    onChange={e => updateLayer(layer.id, { fontSize: Math.max(8, parseInt(e.target.value) || 28) })}
+                                    className="w-8 text-center bg-transparent text-[11px] font-bold text-white focus:outline-none"
+                                  />
+                                  <button
+                                    onClick={() => updateLayer(layer.id, { fontSize: Math.min(180, (layer.fontSize || 28) + 2) })}
+                                    className="px-1 text-white/70 hover:text-white font-bold"
+                                    title="Increase size"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                {/* 3. Bold & Italic Toggles */}
+                                <button
+                                  onClick={() => updateLayer(layer.id, { bold: !layer.bold })}
+                                  className={cn('w-6 h-6 rounded flex items-center justify-center font-bold text-xs transition-colors', layer.bold ? 'bg-amber-400 text-black' : 'hover:bg-white/20 text-white')}
+                                  title="Toggle Bold"
+                                >
+                                  B
+                                </button>
+                                <button
+                                  onClick={() => updateLayer(layer.id, { italic: !layer.italic })}
+                                  className={cn('w-6 h-6 rounded flex items-center justify-center italic font-serif text-xs transition-colors', layer.italic ? 'bg-amber-400 text-black' : 'hover:bg-white/20 text-white')}
+                                  title="Toggle Italic"
+                                >
+                                  I
+                                </button>
+
+                                {/* 4. Alignment */}
+                                <div className="flex items-center gap-0.5 bg-[#2A2A22] p-0.5 rounded-lg border border-white/20">
+                                  <button onClick={() => updateLayer(layer.id, { align: 'left' })} className={cn('p-1 rounded', layer.align === 'left' ? 'text-amber-400' : 'text-white/60 hover:text-white')}>
+                                    <AlignLeft size={12} />
+                                  </button>
+                                  <button onClick={() => updateLayer(layer.id, { align: 'center' })} className={cn('p-1 rounded', !layer.align || layer.align === 'center' ? 'text-amber-400' : 'text-white/60 hover:text-white')}>
+                                    <AlignCenter size={12} />
+                                  </button>
+                                  <button onClick={() => updateLayer(layer.id, { align: 'right' })} className={cn('p-1 rounded', layer.align === 'right' ? 'text-amber-400' : 'text-white/60 hover:text-white')}>
+                                    <AlignRight size={12} />
+                                  </button>
+                                </div>
+
+                                {/* 5. Color Swatch & Native Color Picker */}
+                                <div className="relative flex items-center">
+                                  <input
+                                    type="color"
+                                    value={layer.color || '#000000'}
+                                    onChange={e => updateLayer(layer.id, { color: e.target.value })}
+                                    className="w-6 h-6 rounded-full cursor-pointer border border-white/40 p-0 bg-transparent"
+                                    title="Choose text color"
+                                  />
+                                </div>
+
+                                {/* 6. Arc / Curvature Slider */}
+                                <div className="flex items-center gap-1 bg-[#2A2A22] px-2 py-0.5 rounded-lg border border-white/20 text-[10px]">
+                                  <span className="text-white/70">⌒</span>
+                                  <input
+                                    type="range"
+                                    min="-90"
+                                    max="90"
+                                    step="5"
+                                    value={layer.arc || 0}
+                                    onChange={e => updateLayer(layer.id, { arc: parseInt(e.target.value) })}
+                                    className="w-14 accent-amber-400 h-1.5 cursor-pointer"
+                                    title="Text curvature"
+                                  />
+                                  <span className="font-mono text-amber-400 text-[10px] w-6 text-right">{layer.arc || 0}°</span>
+                                </div>
+
+                                {/* 7. Letter Spacing Slider */}
+                                <div className="flex items-center gap-1 bg-[#2A2A22] px-2 py-0.5 rounded-lg border border-white/20 text-[10px]">
+                                  <span className="text-white/70">A↔A</span>
+                                  <input
+                                    type="range"
+                                    min="-2"
+                                    max="12"
+                                    step="1"
+                                    value={layer.letterSpacing || 0}
+                                    onChange={e => updateLayer(layer.id, { letterSpacing: parseInt(e.target.value) })}
+                                    className="w-12 accent-amber-400 h-1.5 cursor-pointer"
+                                    title="Letter spacing"
+                                  />
+                                  <span className="font-mono text-amber-400 text-[10px] w-5 text-right">{layer.letterSpacing || 0}</span>
+                                </div>
+
+                                {/* 8. Print Finish dropdown */}
+                                <select
+                                  value={layer.printMethod || 'dtg'}
+                                  onChange={e => updateLayer(layer.id, { printMethod: e.target.value as PrintMethod })}
+                                  className="bg-[#2A2A22] text-amber-300 text-[10px] font-bold px-1.5 py-1 rounded border border-white/20 focus:outline-none cursor-pointer"
+                                  title="Print Technique"
+                                >
+                                  <option value="dtg">🎨 DTG</option>
+                                  <option value="embroidery">🧵 Sewed</option>
+                                  <option value="chenille">🧶 Chenille</option>
+                                  <option value="screen">🖨️ Screen</option>
+                                  <option value="vintage">🌾 Vintage</option>
+                                  <option value="vinyl">✂️ Vinyl</option>
+                                </select>
+                              </div>
+                            )}
 
                             {/* Rotate handle */}
                             <div

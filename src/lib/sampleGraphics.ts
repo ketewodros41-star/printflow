@@ -725,4 +725,132 @@ export const SAMPLE_GRAPHICS: GraphicItem[] = [
     `.trim(),
     get previewUrl() { return svgToDataUrl(this.svg) }
   },
+  {
+    id: 'g-lion-judah-crest',
+    name: 'Lion of Judah Crown Emblem',
+    category: 'culture',
+    defaultPrintMethod: 'screen',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="200" cy="200" r="185" fill="#1A1A12"/>
+  <circle cx="200" cy="200" r="170" fill="none" stroke="#C59B27" stroke-width="4"/>
+  <!-- Crown -->
+  <polygon points="140,110 160,80 200,100 240,80 260,110 245,130 155,130" fill="#E6C875" stroke="#C59B27" stroke-width="3"/>
+  <circle cx="200" cy="75" r="8" fill="#D4AF37"/>
+  <!-- Lion mane & face -->
+  <path d="M 150 140 Q 120 180 150 230 Q 200 260 250 230 Q 280 180 250 140 Z" fill="#D4AF37"/>
+  <path d="M 170 170 Q 200 150 230 170 L 220 220 Q 200 235 180 220 Z" fill="#1A1A12"/>
+  <polygon points="190,200 210,200 200,215" fill="#E6C875"/>
+  <text x="200" y="300" text-anchor="middle" font-family="'Oswald', sans-serif" font-size="20" font-weight="bold" fill="#F4E8C1" letter-spacing="4">GREAT LION</text>
+  <text x="200" y="330" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#C59B27" letter-spacing="3">ADDIS ABABA HERITAGE</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  },
+  {
+    id: 'g-pine-compass',
+    name: 'North Star & Pine Ridge',
+    category: 'outdoor',
+    defaultPrintMethod: 'screen',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" rx="30" fill="#1B3B2B"/>
+  <polygon points="200,50 212,120 280,132 212,144 200,210 188,144 120,132 188,120" fill="#E2D4B7"/>
+  <!-- Mountain & Trees -->
+  <polygon points="200,150 320,320 80,320" fill="#2D5A40"/>
+  <polygon points="200,150 200,320 80,320" fill="#234732"/>
+  <!-- Pine trees -->
+  <polygon points="150,250 170,290 130,290" fill="#142C1E"/>
+  <polygon points="250,250 270,290 230,290" fill="#142C1E"/>
+  <polygon points="200,230 225,280 175,280" fill="#0E2015"/>
+  <text x="200" y="360" text-anchor="middle" font-family="'Impact', sans-serif" font-size="24" fill="#E2D4B7" letter-spacing="5">NORTH TRAIL</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  },
+  {
+    id: 'g-espresso-portafilter',
+    name: 'Artisan Espresso Portafilter',
+    category: 'coffee',
+    defaultPrintMethod: 'dtg',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="200" cy="200" r="180" fill="#2B1E16"/>
+  <!-- Portafilter handle and basket -->
+  <circle cx="160" cy="180" r="70" fill="#D5C5B5" stroke="#8C6D58" stroke-width="8"/>
+  <circle cx="160" cy="180" r="56" fill="#4A2E1B"/>
+  <rect x="220" y="165" width="130" height="30" rx="8" fill="#1A1A12" stroke="#8C6D58" stroke-width="4"/>
+  <!-- Steam lines -->
+  <path d="M 140 100 Q 150 70 140 50" stroke="#D5C5B5" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 165 95 Q 175 65 165 45" stroke="#D5C5B5" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 190 100 Q 200 70 190 50" stroke="#D5C5B5" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="200" y="300" text-anchor="middle" font-family="'Georgia', serif" font-weight="bold" font-size="22" fill="#EFE8E0" letter-spacing="3">BARISTA ARCHIVE</text>
+  <text x="200" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#C5A07A" letter-spacing="4">9 BAR PRESSURE · 1994</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  },
+  {
+    id: 'g-cyber-smiley',
+    name: 'Cyber Acid Acid-Smiley',
+    category: 'streetwear',
+    defaultPrintMethod: 'screen',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="200" cy="200" r="175" fill="#E0FE10"/>
+  <!-- Dripping acid eyes -->
+  <ellipse cx="145" cy="150" rx="18" ry="28" fill="#111111"/>
+  <ellipse cx="255" cy="150" rx="18" ry="28" fill="#111111"/>
+  <!-- Dripping melting mouth -->
+  <path d="M 110 230 Q 200 320 290 230 Q 250 270 200 250 Q 150 270 110 230 Z" fill="#111111"/>
+  <path d="M 195 250 L 195 310 Q 200 320 205 310 L 205 250 Z" fill="#111111"/>
+  <text x="200" y="365" text-anchor="middle" font-family="'Impact', sans-serif" font-size="20" fill="#111111" letter-spacing="4">DON'T WORRY</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  },
+  {
+    id: 'g-golden-boxing',
+    name: 'Golden Boxing Club Crest',
+    category: 'athletics',
+    defaultPrintMethod: 'embroidery',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Crest Shape -->
+  <path d="M 70 80 L 330 80 L 330 220 Q 330 340 200 380 Q 70 340 70 220 Z" fill="#161B22" stroke="#D4AF37" stroke-width="8"/>
+  <!-- Boxing Gloves outline -->
+  <path d="M 150 150 C 130 130, 110 160, 120 190 L 160 210 L 170 180 Z" fill="#D4AF37"/>
+  <path d="M 250 150 C 270 130, 290 160, 280 190 L 240 210 L 230 180 Z" fill="#D4AF37"/>
+  <text x="200" y="130" text-anchor="middle" font-family="'Oswald', sans-serif" font-weight="bold" font-size="24" fill="#FFFFFF" letter-spacing="4">FIGHT CLUB</text>
+  <text x="200" y="270" text-anchor="middle" font-family="'Impact', sans-serif" font-size="36" fill="#D4AF37" letter-spacing="2">CHAMPION</text>
+  <text x="200" y="305" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#A0A0A0" letter-spacing="3">HEAVYWEIGHT CLASS</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  },
+  {
+    id: 'g-merrowed-tiger-patch',
+    name: 'Embroidered Roaring Tiger',
+    category: 'sewed',
+    defaultPrintMethod: 'embroidery',
+    svg: `
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer stitched circle -->
+  <circle cx="200" cy="200" r="175" fill="#8B1E1E" stroke="#E5A93C" stroke-width="12"/>
+  <circle cx="200" cy="200" r="165" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="4 2"/>
+  <!-- Tiger head graphic -->
+  <polygon points="120,110 150,150 110,170" fill="#E5A93C"/>
+  <polygon points="280,110 250,150 290,170" fill="#E5A93C"/>
+  <polygon points="150,150 250,150 230,250 170,250" fill="#F8F3E6"/>
+  <polygon points="200,210 185,235 215,235" fill="#111111"/>
+  <!-- Tiger stripes -->
+  <path d="M 160 170 L 190 180 L 160 190 Z" fill="#111111"/>
+  <path d="M 240 170 L 210 180 L 240 190 Z" fill="#111111"/>
+  <text x="200" y="310" text-anchor="middle" font-family="'Impact', sans-serif" font-size="28" fill="#F8F3E6" letter-spacing="3">WILD TIGER</text>
+  <text x="200" y="335" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#E5A93C" letter-spacing="4">THREAD RELIEF</text>
+</svg>
+    `.trim(),
+    get previewUrl() { return svgToDataUrl(this.svg) }
+  }
 ]
+

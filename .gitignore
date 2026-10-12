@@ -35,6 +35,7 @@ Thumbs.db
 /scripts/screenshots/
 /scratch/
 /public/mockup-tests/
+/scripts/printify_bundles/
 
 # Python cache & virtual environments
 __pycache__/
