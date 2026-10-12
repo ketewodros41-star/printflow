@@ -613,7 +613,7 @@ export function RealisticLongSleeveFlatLay({
         viewBox={viewBox}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full max-h-[580px] drop-shadow-[0_18px_26px_rgba(0,0,0,0.06)]"
+        className="w-full h-full max-h-[580px] drop-shadow-[0_20px_28px_rgba(0,0,0,0.07)]"
       >
         <defs>
           <PrintTechniqueSvgDefs id={id} />
@@ -661,20 +661,6 @@ export function RealisticLongSleeveFlatLay({
             />
           </clipPath>
         </defs>
-
-        {/* Studio Floor Soft Contact Shadows (Subtle, authentic Printify standard) */}
-        <ellipse
-          cx="512"
-          cy="801"
-          rx="230"
-          ry="5"
-          fill="#000000"
-          opacity={0.05}
-          filter="blur(5px)"
-        />
-        {/* Left & Right Cuff Contact Shadows (Tight against wrists) */}
-        <ellipse cx="120" cy="690" rx="26" ry="4" fill="#000000" opacity={0.04} filter="blur(4px)" />
-        <ellipse cx="904" cy="690" rx="26" ry="4" fill="#000000" opacity={0.04} filter="blur(4px)" />
 
         {/* Photographic Long Sleeve Garment Blank (Pristine isolated photographic canvas) */}
         <image

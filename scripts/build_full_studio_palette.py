@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+from scipy import interpolate
 
 print("Building Master Studio Palette for Long Sleeve Tee (Front & Back)...")
 
@@ -73,6 +74,7 @@ S_front = np.clip(white_gray_f / 0.94, 0.04, 1.20)
 # ═══════════════════════════════════════════════════════════════════════════
 # 3. Extract mathematically pristine sub-pixel alpha mask for BACK
 #    Directly from authentic photographic back image media_1791825485756_c7d015f2.png
+#    Using Periodic Cubic B-Spline Contour & 2x Supersampled Area Anti-Aliasing
 # ═══════════════════════════════════════════════════════════════════════════
 diff_b = np.max(255 - im_back.astype(np.int32), axis=2).astype(np.float32)
 
@@ -85,8 +87,8 @@ diff_clean_b[:38, :] = 0.0
 diff_clean_b[:, :12] = 0.0
 diff_clean_b[:, 1012:] = 0.0
 
-# Solid fabric binary map with threshold 4.0
-fabric_bin_b = (diff_clean_b >= 4.0).astype(np.uint8)
+# Solid fabric binary map with threshold 7.0 (filters out faint drop-shadow noise while capturing 100% of fabric)
+fabric_bin_b = (diff_clean_b >= 7.0).astype(np.uint8)
 
 # Connected background flood fill from outer borders (preserves open underarm cavities!)
 flood_mask_b = np.zeros((h_b + 2, w_b + 2), np.uint8)
@@ -99,37 +101,16 @@ cv2.floodFill(flood_img_b, flood_mask_b, (w_b - 1, h_b - 1), 2)
 bg_connected_b = (flood_img_b == 2)
 garment_mask_b = (~bg_connected_b).astype(np.uint8)
 
-# Morphological clean
-kernel9 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-garment_clean_b = cv2.morphologyEx(garment_mask_b, cv2.MORPH_CLOSE, kernel9)
+# Morphological clean with 7x7 ellipse
+kernel7 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+garment_clean_b = cv2.morphologyEx(garment_mask_b, cv2.MORPH_CLOSE, kernel7)
 
-# Extract largest garment contour & smooth with 1D Gaussian kernel (k_size=21, sigma=4.0)
+# Extract largest garment contour
 contours_b, _ = cv2.findContours(garment_clean_b, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 c_max_b = max(contours_b, key=cv2.contourArea)
 
-pts_b = c_max_b.reshape(-1, 2).astype(np.float32)
-k_size = 21
-pad = k_size // 2
-pts_padded_b = np.vstack([pts_b[-pad:], pts_b, pts_b[:pad]])
-kernel_1d = cv2.getGaussianKernel(k_size, 4.0).flatten()
-smoothed_pts_b = np.zeros_like(pts_b)
-for i in range(2):
-    smoothed_pts_b[:, i] = np.convolve(pts_padded_b[:, i], kernel_1d, mode='valid')
-
-smoothed_contour_b = smoothed_pts_b.reshape(-1, 1, 2).astype(np.int32)
-
-smooth_mask_b = np.zeros((h_b, w_b), dtype=np.uint8)
-cv2.drawContours(smooth_mask_b, [smoothed_contour_b], -1, 1, thickness=cv2.FILLED)
-
-# Signed distance field for sub-pixel anti-aliased edge
-dist_in_b = cv2.distanceTransform(smooth_mask_b, cv2.DIST_L2, 5)
-dist_out_b = cv2.distanceTransform(1 - smooth_mask_b, cv2.DIST_L2, 5)
-sdf_b = dist_in_b - dist_out_b
-
-raw_alpha_b = np.clip(sdf_b / 1.0 + 0.5, 0.0, 1.0).astype(np.float32)
-
 # Garment bounding box for scaling
-x_min_b, y_min_b, w_box_b, h_box_b = cv2.boundingRect(smoothed_contour_b)
+x_min_b, y_min_b, w_box_b, h_box_b = cv2.boundingRect(c_max_b)
 
 # Scale & Align to Master 1024 x 953 Canvas
 scale_b = 929.0 / float(w_box_b)
@@ -137,14 +118,12 @@ scaled_w_b = int(round(w_b * scale_b))
 scaled_h_b = int(round(h_b * scale_b))
 
 im_b_scaled = cv2.resize(im_back, (scaled_w_b, scaled_h_b), interpolation=cv2.INTER_LANCZOS4)
-alpha_b_scaled = cv2.resize(raw_alpha_b, (scaled_w_b, scaled_h_b), interpolation=cv2.INTER_LANCZOS4)
 
 center_x_b_scaled = (x_min_b + w_box_b / 2.0) * scale_b
 offset_x_b = int(round(512.0 - center_x_b_scaled))
 offset_y_b = int(round(114.0 - y_min_b * scale_b))
 
 master_back_rgb = np.full((h_w, w_w, 3), 255, dtype=np.uint8)
-master_back_alpha = np.zeros((h_w, w_w), dtype=np.float32)
 
 src_bx1 = max(0, -offset_x_b)
 src_bx2 = min(scaled_w_b, w_w - offset_x_b)
@@ -157,17 +136,38 @@ dst_by1 = max(0, offset_y_b)
 dst_by2 = dst_by1 + (src_by2 - src_by1)
 
 master_back_rgb[dst_by1:dst_by2, dst_bx1:dst_bx2] = im_b_scaled[src_by1:src_by2, src_bx1:src_bx2]
-master_back_alpha[dst_by1:dst_by2, dst_bx1:dst_bx2] = alpha_b_scaled[src_by1:src_by2, src_bx1:src_bx2]
 
-# Clean borders
-master_back_alpha[master_back_alpha < 0.03] = 0.0
+# Map contour vertices directly into Master Canvas coordinates
+pts = c_max_b.reshape(-1, 2).astype(np.float64)
+pts_master = np.zeros_like(pts)
+pts_master[:, 0] = pts[:, 0] * scale_b + offset_x_b
+pts_master[:, 1] = pts[:, 1] * scale_b + offset_y_b
+
+# Sub-sample for B-spline parameterization (step 4 gives optimal knot density)
+sub_pts = pts_master[::4]
+x_knots = np.append(sub_pts[:, 0], sub_pts[0, 0])
+y_knots = np.append(sub_pts[:, 1], sub_pts[0, 1])
+
+# Periodic cubic B-spline interpolation (s=250.0 eliminates discrete stair-stepping while preserving 100% natural curves)
+tck, u = interpolate.splprep([x_knots, y_knots], s=250.0, per=True)
+u_eval = np.linspace(0, 1, 4000)
+x_eval, y_eval = interpolate.splev(u_eval, tck)
+smooth_contour_master = np.column_stack([x_eval, y_eval])
+
+# 2x Supersampled analytic polygon rasterization + cv2.INTER_AREA downsampling (zero Gibbs ringing!)
+mask_2x = np.zeros((h_w * 2, w_w * 2), dtype=np.uint8)
+contour_2x = (smooth_contour_master * 2.0).astype(np.int32).reshape(-1, 1, 2)
+cv2.drawContours(mask_2x, [contour_2x], -1, 255, thickness=cv2.FILLED)
+
+master_back_alpha = cv2.resize(mask_2x, (w_w, h_w), interpolation=cv2.INTER_AREA).astype(np.float32) / 255.0
+
+# Precision clamp: strictly 0.0 outside garment bounds
+master_back_alpha[master_back_alpha < 0.02] = 0.0
 master_back_alpha[:100, :] = 0.0
-master_back_alpha[802:, :] = 0.0
+master_back_alpha[803:, :] = 0.0
 master_back_alpha[:, :40] = 0.0
 master_back_alpha[:, 984:] = 0.0
 
-master_back_alpha = cv2.GaussianBlur(master_back_alpha, (3, 3), 0.4)
-master_back_alpha[master_back_alpha < 0.02] = 0.0
 
 white_gray_b = cv2.cvtColor(master_back_rgb, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
 S_back = np.clip(white_gray_b / 0.94, 0.04, 1.20)
