@@ -157,14 +157,27 @@ export function renderLayersInSvg(
     if (l.visible === false) return false
     const v = (l.view || 'Center chest').toLowerCase()
     if (normSide === 'all') return true
+
+    if (normSide === 'collar' || normSide.includes('undercollar')) {
+      return v.includes('collar') || v === 'all'
+    }
+    if (normSide === 'placket') {
+      return v.includes('placket') || v === 'all'
+    }
+    if (normSide === 'sleeve_right' || normSide.includes('right sleeve') || normSide.includes('right-sleeve')) {
+      return (v.includes('right sleeve') || (v.includes('right') && !v.includes('chest') && !v.includes('front'))) || v === 'all'
+    }
+    if (normSide === 'sleeve_left' || normSide.includes('left sleeve') || normSide.includes('left-sleeve')) {
+      return (v.includes('left sleeve') || (v.includes('left') && !v.includes('chest') && !v.includes('front'))) || v === 'all'
+    }
+    if (normSide === 'back') {
+      return (v.includes('back') && !v.includes('collar')) || v === 'all'
+    }
     if (normSide === 'front' || normSide === 'wrap' || normSide === 'front-side' || normSide.includes('handle')) {
-      return v.includes('front') || v.includes('chest') || v.includes('center') || v.includes('right') || v.includes('left') || v.includes('crown') || v.includes('wrap') || v.includes('handle')
-    } else if (normSide === 'back') {
-      return v.includes('back') || v.includes('collar')
-    } else if (normSide.includes('left')) {
-      return v.includes('left') || v.includes('chest') || v.includes('center') || v.includes('front')
-    } else if (normSide.includes('right')) {
-      return v.includes('right') || v.includes('chest') || v.includes('center') || v.includes('front')
+      if (v.includes('sleeve') || v.includes('collar') || v.includes('placket')) {
+        return false
+      }
+      return v.includes('front') || v.includes('chest') || v.includes('center') || v.includes('crown') || v.includes('wrap') || v.includes('handle') || v === 'all'
     }
     return true
   })
@@ -798,14 +811,20 @@ export function RealisticPoloFlatLay({
   const mainLayers = layers.filter(l => {
     const v = (l.view || 'front').toLowerCase()
     return isBack
-      ? v.includes('back') || v === 'all'
-      : v.includes('front') || v.includes('chest') || v === 'all'
+      ? v.includes('back')
+      : v.includes('front') || v.includes('chest') || v.includes('all')
   })
 
   const collarLayers = !isBack ? layers.filter(l => (l.view || '').toLowerCase().includes('collar')) : []
   const placketLayers = !isBack ? layers.filter(l => (l.view || '').toLowerCase().includes('placket')) : []
-  const rightSleeveLayers = layers.filter(l => (l.view || '').toLowerCase().includes('right'))
-  const leftSleeveLayers = layers.filter(l => (l.view || '').toLowerCase().includes('left'))
+  const rightSleeveLayers = layers.filter(l => {
+    const v = (l.view || '').toLowerCase()
+    return (v.includes('right sleeve') || (v.includes('right') && !v.includes('chest') && !v.includes('front')))
+  })
+  const leftSleeveLayers = layers.filter(l => {
+    const v = (l.view || '').toLowerCase()
+    return (v.includes('left sleeve') || (v.includes('left') && !v.includes('chest') && !v.includes('front')))
+  })
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -839,11 +858,37 @@ export function RealisticPoloFlatLay({
           )}
 
           <filter id={`polo-pique-mesh-${id}`} x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="piqueGrain" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0" result="meshAlpha" />
-            <feBlend mode="multiply" in="SourceGraphic" in2="meshAlpha" result="blended" />
-            <feComposite in="blended" in2="SourceAlpha" operator="in" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.92 0.88" numOctaves="3" result="piqueNoise" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.045 0" result="piqueGrain" />
+            <feBlend mode="multiply" in="SourceGraphic" in2="piqueGrain" result="texturedInk" />
+            <feDisplacementMap in="texturedInk" in2="piqueNoise" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="wovenGraphic" />
+            <feComposite in="wovenGraphic" in2="SourceAlpha" operator="in" />
           </filter>
+
+          {/* Panel Clipping Masks: strictly bound artwork within garment physical seams */}
+          <clipPath id={`polo-print-clip-front-${id}`}>
+            <path d="M 295,235 C 330,225 380,220 477,220 C 574,220 624,225 659,235 L 728,470 L 733,938 C 650,942 550,941 477,941 C 404,941 304,942 221,938 L 226,470 Z" />
+          </clipPath>
+
+          <clipPath id={`polo-print-clip-back-${id}`}>
+            <path d="M 365,142 C 420,158 535,158 590,142 L 665,220 L 728,470 L 733,938 C 650,942 550,941 477,941 C 404,941 304,942 221,938 L 226,470 L 289,220 Z" />
+          </clipPath>
+
+          <clipPath id={`polo-collar-clip-${id}`}>
+            <polygon points="370,60 585,60 560,240 477,185 394,240" />
+          </clipPath>
+
+          <clipPath id={`polo-placket-clip-${id}`}>
+            <rect x="444" y="175" width="66" height="220" rx="3" />
+          </clipPath>
+
+          <clipPath id={`polo-right-sleeve-clip-${id}`}>
+            <polygon points="580,105 912,350 790,465 710,380 645,210" />
+          </clipPath>
+
+          <clipPath id={`polo-left-sleeve-clip-${id}`}>
+            <polygon points="374,105 42,350 164,465 244,380 309,210" />
+          </clipPath>
         </defs>
 
         {/* ── Studio Flat-Lay Photographic Blank (Authentic Pique Polo) ── */}
@@ -860,6 +905,7 @@ export function RealisticPoloFlatLay({
         {/* ── Main Torso (Front or Back) Artwork Stage ── */}
         <g
           id="polo-main-stage"
+          clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
           filter={`url(#polo-pique-mesh-${id})`}
           style={{
             mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
@@ -867,20 +913,37 @@ export function RealisticPoloFlatLay({
             opacity: isDark ? 0.98 : 1,
           }}
         >
-          {renderLayersInSvg(mainLayers, printBox, mainTargetBox, isBack ? 'back' : 'front', colorMode, id, printMethod)}
+          {renderLayersInSvg(
+            mainLayers,
+            printBox.w > 500 ? { left: 145, top: 85, w: 210, h: 375 } : printBox,
+            mainTargetBox,
+            isBack ? 'back' : 'front',
+            colorMode,
+            id,
+            printMethod
+          )}
         </g>
 
         {/* ── Collar Artwork Projection (Front View) ── */}
         {collarLayers.length > 0 && (
           <g
             id="polo-collar-stage"
+            clipPath={`url(#polo-collar-clip-${id})`}
             filter={`url(#polo-pique-mesh-${id})`}
             style={{
               mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
               filter: 'contrast(1.04) saturate(1.02)',
             }}
           >
-            {renderLayersInSvg(collarLayers, printBox, collarTargetBox, 'collar', colorMode, id, printMethod)}
+            {renderLayersInSvg(
+              collarLayers,
+              printBox.w > 500 ? { left: 65, top: 105, w: 370, h: 80 } : printBox,
+              collarTargetBox,
+              'collar',
+              colorMode,
+              id,
+              printMethod
+            )}
           </g>
         )}
 
@@ -888,13 +951,22 @@ export function RealisticPoloFlatLay({
         {placketLayers.length > 0 && (
           <g
             id="polo-placket-stage"
+            clipPath={`url(#polo-placket-clip-${id})`}
             filter={`url(#polo-pique-mesh-${id})`}
             style={{
               mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
               filter: 'contrast(1.04) saturate(1.02)',
             }}
           >
-            {renderLayersInSvg(placketLayers, printBox, placketTargetBox, 'placket', colorMode, id, printMethod)}
+            {renderLayersInSvg(
+              placketLayers,
+              printBox.w > 500 ? { left: 145, top: 95, w: 110, h: 260 } : printBox,
+              placketTargetBox,
+              'placket',
+              colorMode,
+              id,
+              printMethod
+            )}
           </g>
         )}
 
@@ -902,13 +974,22 @@ export function RealisticPoloFlatLay({
         {rightSleeveLayers.length > 0 && (
           <g
             id="polo-right-sleeve-stage"
+            clipPath={`url(#polo-right-sleeve-clip-${id})`}
             filter={`url(#polo-pique-mesh-${id})`}
             style={{
               mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
               filter: 'contrast(1.04) saturate(1.02)',
             }}
           >
-            {renderLayersInSvg(rightSleeveLayers, printBox, rightSleeveTargetBox, 'sleeve_right', colorMode, id, printMethod)}
+            {renderLayersInSvg(
+              rightSleeveLayers,
+              printBox.w > 500 ? { left: 95, top: 105, w: 310, h: 185 } : printBox,
+              rightSleeveTargetBox,
+              'sleeve_right',
+              colorMode,
+              id,
+              printMethod
+            )}
           </g>
         )}
 
@@ -916,13 +997,62 @@ export function RealisticPoloFlatLay({
         {leftSleeveLayers.length > 0 && (
           <g
             id="polo-left-sleeve-stage"
+            clipPath={`url(#polo-left-sleeve-clip-${id})`}
             filter={`url(#polo-pique-mesh-${id})`}
             style={{
               mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
               filter: 'contrast(1.04) saturate(1.02)',
             }}
           >
-            {renderLayersInSvg(leftSleeveLayers, printBox, leftSleeveTargetBox, 'sleeve_left', colorMode, id, printMethod)}
+            {renderLayersInSvg(
+              leftSleeveLayers,
+              printBox.w > 500 ? { left: 95, top: 105, w: 310, h: 185 } : printBox,
+              leftSleeveTargetBox,
+              'sleeve_left',
+              colorMode,
+              id,
+              printMethod
+            )}
+          </g>
+        )}
+
+        {/* ── Authentic Fabric Fold & Lighting Crease Overlay (Printify Physical Integration) ── */}
+        {layers.length > 0 && (
+          <g
+            clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
+            style={{
+              mixBlendMode: isDark ? 'soft-light' : 'multiply',
+              pointerEvents: 'none',
+            }}
+            opacity={isDark ? 0.42 : 0.26}
+          >
+            <image
+              href={assetUrl}
+              x="0"
+              y="0"
+              width="954"
+              height="1024"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </g>
+        )}
+        {layers.length > 0 && (
+          <g
+            clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
+            style={{
+              mixBlendMode: 'screen',
+              pointerEvents: 'none',
+            }}
+            opacity={0.07}
+          >
+            <image
+              href={assetUrl}
+              x="0"
+              y="0"
+              width="954"
+              height="1024"
+              preserveAspectRatio="xMidYMid meet"
+            />
           </g>
         )}
 

@@ -791,17 +791,20 @@ export default function ProductCreatorPage() {
   // ── Layer Management ────────────────────────────────────────────────────────
   const addLayer = useCallback((partial: Omit<Layer, 'id' | 'visible' | 'view'>) => {
     const id = `l-${Date.now()}`
+    const targetArea = (info.isAOP && activePrintArea.toLowerCase().includes('all'))
+      ? 'Front side'
+      : activePrintArea
     const newLayers: Layer[] = [...layers, {
       printMethod: partial.printMethod || activePrintMethod || 'dtg',
       ...partial,
       id,
-      view: activePrintArea,
+      view: targetArea,
       visible: true
     }]
     setLayers(newLayers)
     pushHistory(newLayers)
     setSelectedId(id)
-  }, [activePrintArea, activePrintMethod, layers, pushHistory])
+  }, [activePrintArea, activePrintMethod, info.isAOP, layers, pushHistory])
 
   const updateLayer = useCallback((id: string, patch: Partial<Layer>) => {
     setLayers(p => p.map(l => l.id === id ? { ...l, ...patch } : l))
@@ -900,10 +903,14 @@ export default function ProductCreatorPage() {
 
   // Quick addition of sample graphic
   const handleAddSampleGraphic = (item: GraphicItem) => {
-    const w = Math.round(printBox.w * 0.72)
+    const targetArea = (info.isAOP && activePrintArea.toLowerCase().includes('all'))
+      ? 'Front side'
+      : activePrintArea
+    const targetBox = currentProductAreas[targetArea] ?? printBox
+    const w = Math.round(targetBox.w * 0.72)
     const h = w
-    const x = Math.round(printBox.left + (printBox.w - w) / 2)
-    const y = Math.round(printBox.top + (printBox.h - h) / 2)
+    const x = Math.round(targetBox.left + (targetBox.w - w) / 2)
+    const y = Math.round(targetBox.top + (targetBox.h - h) / 2)
 
     addLayer({
       type: 'image',
@@ -1046,11 +1053,15 @@ export default function ProductCreatorPage() {
       const src = ev.target?.result as string
       const img = new Image()
       img.onload = () => {
-        const w = Math.round(printBox.w * 0.70)
+        const targetArea = (info.isAOP && activePrintArea.toLowerCase().includes('all'))
+          ? 'Front side'
+          : activePrintArea
+        const targetBox = currentProductAreas[targetArea] ?? printBox
+        const w = Math.round(targetBox.w * 0.70)
         const aspect = img.naturalHeight / (img.naturalWidth || 1)
         const h = Math.round(w * aspect)
-        const x = Math.round(printBox.left + (printBox.w - w) / 2)
-        const y = Math.round(printBox.top + (printBox.h - h) / 2)
+        const x = Math.round(targetBox.left + (targetBox.w - w) / 2)
+        const y = Math.round(targetBox.top + (targetBox.h - h) / 2)
         addLayer({
           type: 'image',
           src,
