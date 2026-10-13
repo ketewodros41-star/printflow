@@ -45,7 +45,7 @@ export interface RealisticFlatLayProps {
   children?: React.ReactNode
 }
 
-function isColorDark(hex: string): boolean {
+export function isColorDark(hex: string): boolean {
   if (!hex || !hex.startsWith('#')) return false
   const clean = hex.replace('#', '')
   const r = parseInt(clean.substring(0, 2), 16) || 0
@@ -472,9 +472,16 @@ export function RealisticTShirtFlatLay({
   // Direct high-res photographic blank when available, or high-res white flat-lay dynamically tinted
   const assetUrl = directAsset || (isBack ? '/mockups/tshirt-flatlay-back-white.png' : '/mockups/tshirt-flatlay-white.png')
 
-  const targetChest = isBack
-    ? { x: 310, y: 200, width: 365, height: 500 }
-    : { x: 310, y: 225, width: 365, height: 490 }
+  const targetChest = printBox
+    ? {
+        x: (printBox.left / 500) * 985,
+        y: (printBox.top / 500) * 1024,
+        width: (printBox.w / 500) * 985,
+        height: (printBox.h / 500) * 1024,
+      }
+    : (isBack
+        ? { x: 310, y: 200, width: 365, height: 500 }
+        : { x: 310, y: 225, width: 365, height: 490 })
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -679,9 +686,18 @@ export function RealisticLongSleeveFlatLay({
   const assetUrl = directAsset || (isBack ? '/mockups/longsleeve-flatlay-back.png' : '/mockups/longsleeve-flatlay-white.png')
 
   // Target Chest Projection (12" x 16" bounds on 1024 x 953 photographic stage)
-  const targetChest = isBack
-    ? { x: 335, y: 210, width: 354, height: 490 }
-    : { x: 335, y: 230, width: 354, height: 480 }
+  const targetChest = isCollarCloseup
+    ? (isBack ? { x: 335, y: 210, width: 354, height: 490 } : { x: 335, y: 230, width: 354, height: 480 })
+    : (printBox
+        ? {
+            x: (printBox.left / 500) * 1024,
+            y: (printBox.top / 500) * 953,
+            width: (printBox.w / 500) * 1024,
+            height: (printBox.h / 500) * 953,
+          }
+        : (isBack
+            ? { x: 335, y: 210, width: 354, height: 490 }
+            : { x: 335, y: 230, width: 354, height: 480 }))
 
   // Collar Closeup: Macro 2.2x zoom centered on collar ribbing and upper chest print
   const viewBox = isCollarCloseup
@@ -1467,9 +1483,16 @@ export function RealisticSweatshirtFlatLay({
   const assetUrl = directAsset || (isBack ? '/mockups/sweatshirt-flatlay-back-white.png' : '/mockups/sweatshirt-flatlay-white.png')
 
   // Target coordinates calibrated on 1024x1024 photographic studio crewneck sweatshirt blank
-  const targetChest = isBack
-    ? { x: 310, y: 230, width: 404, height: 500 }
-    : { x: 310, y: 260, width: 404, height: 480 }
+  const targetChest = printBox
+    ? {
+        x: (printBox.left / 500) * 1024,
+        y: (printBox.top / 500) * 1024,
+        width: (printBox.w / 500) * 1024,
+        height: (printBox.h / 500) * 1024,
+      }
+    : (isBack
+        ? { x: 310, y: 230, width: 404, height: 500 }
+        : { x: 310, y: 260, width: 404, height: 480 })
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -2133,9 +2156,16 @@ export function RealisticTankTopFlatLay({
   const assetUrl = directAsset || (isBack ? '/mockups/tank-flatlay-back-white.png' : '/mockups/tank-flatlay-white.png')
 
   // Target coordinates calibrated on 1024x1024 photographic studio muscle tank blank
-  const targetChest = isBack
-    ? { x: 335, y: 230, width: 354, height: 480 }
-    : { x: 335, y: 270, width: 354, height: 460 }
+  const targetChest = printBox
+    ? {
+        x: (printBox.left / 500) * 1024,
+        y: (printBox.top / 500) * 1024,
+        width: (printBox.w / 500) * 1024,
+        height: (printBox.h / 500) * 1024,
+      }
+    : (isBack
+        ? { x: 335, y: 230, width: 354, height: 480 }
+        : { x: 335, y: 270, width: 354, height: 460 })
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -2223,6 +2253,8 @@ const HOODIE_FLATLAY_FRONT_ASSETS: Record<string, string> = {
   '#232326': '/mockups/hoodie-flatlay-front-black.png',
   '#263447': '/mockups/hoodie-flatlay-front-navy.png',
   '#4A543E': '/mockups/hoodie-flatlay-front-olive.png',
+  '#4A4A48': '/mockups/hoodie-flatlay-front-heather-grey.png',
+  '#581825': '/mockups/hoodie-flatlay-front-red.png',
 }
 
 const HOODIE_FLATLAY_BACK_ASSETS: Record<string, string> = {
@@ -2244,6 +2276,8 @@ const HOODIE_FLATLAY_BACK_ASSETS: Record<string, string> = {
   '#232326': '/mockups/hoodie-flatlay-back-black.png',
   '#263447': '/mockups/hoodie-flatlay-back-navy.png',
   '#4A543E': '/mockups/hoodie-flatlay-back-olive.png',
+  '#4A4A48': '/mockups/hoodie-flatlay-back-heather-grey.png',
+  '#581825': '/mockups/hoodie-flatlay-back-red.png',
 }
 
 export function RealisticHoodieFlatLay({
@@ -2251,7 +2285,7 @@ export function RealisticHoodieFlatLay({
   view = 'front',
   colorMode = 'rgb',
   layers = [],
-  printBox = { left: 156, top: 165, w: 188, h: 160 },
+  printBox,
   printMethod,
   className = '',
   children,
@@ -2270,14 +2304,19 @@ export function RealisticHoodieFlatLay({
   const g = (parseInt(cleanHex.substring(2, 4), 16) || 255) / 255
   const b = (parseInt(cleanHex.substring(4, 6), 16) || 255) / 255
 
-  const assetUrl = directAsset || (isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-flatlay-white.png')
+  const assetUrl = directAsset || (isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-flatlay-front-white.png')
 
-  // Target coordinates calibrated on 1024x1024 photographic studio pullover hoodie blank
-  // Front: Centered on chest above kangaroo pocket
-  // Back: Full rear fleece area below hood
-  const targetChest = isBack
-    ? { x: 310, y: 340, width: 404, height: 460 }
-    : { x: 330, y: 320, width: 364, height: 310 }
+  // 1:1 Scale & Coordinate Parity: directly project from printBox with 1024/500 ratio
+  const resolvedPrintBox = printBox || (isBack
+    ? { left: 150, top: 137, w: 200, h: 234 }
+    : { left: 157, top: 168, w: 186, h: 136 })
+
+  const targetChest = {
+    x: (resolvedPrintBox.left / 500) * 1024,
+    y: (resolvedPrintBox.top / 500) * 1024,
+    width: (resolvedPrintBox.w / 500) * 1024,
+    height: (resolvedPrintBox.h / 500) * 1024,
+  }
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -2328,7 +2367,7 @@ export function RealisticHoodieFlatLay({
             filter: 'contrast(1.02) saturate(1.02)',
           }}
         >
-          {renderLayersInSvg(layers, printBox, targetChest, view, colorMode, id, printMethod, isDark)}
+          {renderLayersInSvg(layers, resolvedPrintBox, targetChest, view, colorMode, id, printMethod, isDark)}
         </g>
 
         {/* Physical Fleece Fold Crease & Lighting Overlay */}
@@ -2371,7 +2410,7 @@ export function RealisticZipHoodieFlatLay({
   view = 'front',
   colorMode = 'rgb',
   layers = [],
-  printBox = { left: 272, top: 160, w: 75, h: 75 },
+  printBox,
   printMethod,
   className = '',
   children,
@@ -2390,12 +2429,19 @@ export function RealisticZipHoodieFlatLay({
   const g = (parseInt(cleanHex.substring(2, 4), 16) || 255) / 255
   const b = (parseInt(cleanHex.substring(4, 6), 16) || 255) / 255
 
-  const assetUrl = directAsset || (isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-zip-flatlay-white.png')
+  const assetUrl = directAsset || (isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-zip-flatlay-front-white.png')
 
-  // Target coordinates for full-zip hoodie (left chest or back panel)
-  const targetChest = isBack
-    ? { x: 310, y: 340, width: 404, height: 460 }
-    : { x: 535, y: 320, width: 175, height: 175 }
+  // 1:1 Scale & Coordinate Parity: directly project from printBox with 1024/500 ratio
+  const resolvedPrintBox = printBox || (isBack
+    ? { left: 150, top: 137, w: 200, h: 234 }
+    : { left: 261, top: 166, w: 88, h: 88 })
+
+  const targetChest = {
+    x: (resolvedPrintBox.left / 500) * 1024,
+    y: (resolvedPrintBox.top / 500) * 1024,
+    width: (resolvedPrintBox.w / 500) * 1024,
+    height: (resolvedPrintBox.h / 500) * 1024,
+  }
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -2407,6 +2453,11 @@ export function RealisticZipHoodieFlatLay({
       >
         <defs>
           <PrintTechniqueSvgDefs id={id} isDark={isDark} />
+          {!isBack && (
+            <clipPath id={`zip-chest-clip-${id}`}>
+              <path d="M 0,0 L 504,0 L 504,1024 L 0,1024 Z M 520,0 L 1024,0 L 1024,1024 L 520,1024 Z" />
+            </clipPath>
+          )}
           {!directAsset && (
             <filter id={`garment-tint-zip-${id}`} colorInterpolationFilters="sRGB">
               <feColorMatrix
@@ -2441,12 +2492,13 @@ export function RealisticZipHoodieFlatLay({
         {/* Projected Artwork */}
         <g
           id="artwork-projection-group"
+          clipPath={!isBack ? `url(#zip-chest-clip-${id})` : undefined}
           style={{
             mixBlendMode: 'normal',
             filter: 'contrast(1.02) saturate(1.02)',
           }}
         >
-          {renderLayersInSvg(layers, printBox, targetChest, view, colorMode, id, printMethod, isDark)}
+          {renderLayersInSvg(layers, resolvedPrintBox, targetChest, view, colorMode, id, printMethod, isDark)}
         </g>
 
         {/* Physical Fleece Fold Crease Overlay */}
@@ -2814,6 +2866,148 @@ export function RealisticPillowMockup({
           {children}
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Resolves the authentic photographic studio blank URL and direct asset status for any product type, view, and color.
+ */
+export function getPhotorealisticBlank(
+  productType: string,
+  view: string = 'front',
+  color: string = '#FFFFFF'
+): { assetUrl: string; directAsset: boolean } {
+  const normType = (productType || 'tshirt').toLowerCase()
+  const isBack = view === 'back' || view.toLowerCase().includes('back')
+  const normColor = (color || '#FFFFFF').toUpperCase()
+
+  let directAsset: string | undefined
+  let fallback = '/mockups/tshirt-flatlay-white.png'
+
+  if (normType === 'hoodie' || normType.includes('hoodie')) {
+    if (normType.includes('zip')) {
+      directAsset = isBack ? HOODIE_FLATLAY_BACK_ASSETS[normColor] : ZIP_HOODIE_FLATLAY_FRONT_ASSETS[normColor]
+      fallback = isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-zip-flatlay-front-white.png'
+    } else {
+      directAsset = isBack ? HOODIE_FLATLAY_BACK_ASSETS[normColor] : HOODIE_FLATLAY_FRONT_ASSETS[normColor]
+      fallback = isBack ? '/mockups/hoodie-flatlay-back-white.png' : '/mockups/hoodie-flatlay-front-white.png'
+    }
+  } else if (normType === 'sweatshirt' || normType.includes('sweatshirt')) {
+    directAsset = isBack ? SWEATSHIRT_FLATLAY_BACK_ASSETS[normColor] : SWEATSHIRT_FLATLAY_FRONT_ASSETS[normColor]
+    fallback = isBack ? '/mockups/sweatshirt-flatlay-back-white.png' : '/mockups/sweatshirt-flatlay-front-white.png'
+  } else if (normType === 'longsleeve' || normType.includes('longsleeve')) {
+    directAsset = isBack ? LONGSLEEVE_BACK_ASSETS[normColor] : LONGSLEEVE_FLATLAY_ASSETS[normColor]
+    fallback = isBack ? '/mockups/longsleeve-flatlay-back-white.png' : '/mockups/longsleeve-flatlay-white.png'
+  } else if (normType === 'tshirt' || normType.includes('tshirt')) {
+    directAsset = isBack ? TSHIRT_BACK_ASSETS[normColor] : TSHIRT_FLATLAY_ASSETS[normColor]
+    fallback = isBack ? '/mockups/tshirt-flatlay-back-white.png' : '/mockups/tshirt-flatlay-white.png'
+  } else if (normType === 'tank' || normType.includes('tank')) {
+    directAsset = isBack ? TANK_FLATLAY_BACK_ASSETS[normColor] : TANK_FLATLAY_FRONT_ASSETS[normColor]
+    fallback = isBack ? '/mockups/tank-flatlay-back-white.png' : '/mockups/tank-flatlay-white.png'
+  } else if (normType === 'polo' || normType.includes('polo')) {
+    directAsset = isBack ? POLO_SUBLIMATION_BACK_ASSETS[normColor] : POLO_SUBLIMATION_FRONT_ASSETS[normColor]
+    fallback = isBack ? '/mockups/polo-sublimation-back-white.png' : '/mockups/polo-sublimation-front-white.png'
+  } else if (normType === 'tote' || normType.includes('tote')) {
+    directAsset = '/mockups/tote-flatlay-natural.png'
+    fallback = '/mockups/tote-flatlay-natural.png'
+  } else if (normType === 'mug' || normType.includes('mug')) {
+    directAsset = '/mockups/mug-studio-white.png'
+    fallback = '/mockups/mug-studio-white.png'
+  } else if (normType === 'hat' || normType.includes('hat') || normType.includes('cap')) {
+    directAsset = '/mockups/cap-studio-white.png'
+    fallback = '/mockups/cap-studio-white.png'
+  } else if (normType === 'poster' || normType.includes('poster')) {
+    directAsset = '/mockups/poster-studio-frame.png'
+    fallback = '/mockups/poster-studio-frame.png'
+  } else if (normType === 'blanket' || normType.includes('blanket')) {
+    directAsset = '/mockups/blanket-studio-folded.png'
+    fallback = '/mockups/blanket-studio-folded.png'
+  } else if (normType === 'pillow' || normType.includes('pillow')) {
+    directAsset = '/mockups/pillow-studio-square.png'
+    fallback = '/mockups/pillow-studio-square.png'
+  }
+
+  return {
+    assetUrl: directAsset || fallback,
+    directAsset: Boolean(directAsset),
+  }
+}
+
+/**
+ * Photorealistic Studio Blank Canvas for 2D Design Edit Mode.
+ * Directly underlays the authentic photographic flat-lay blank behind canvas layers,
+ * giving designers 100% realistic garment context (collars, pockets, zippers, seams).
+ */
+export function PhotorealisticStudioCanvas({
+  productType,
+  view = 'front',
+  color = '#FFFFFF',
+  className = '',
+}: {
+  productType: string
+  view?: string
+  color?: string
+  className?: string
+}) {
+  const id = useId().replace(/:/g, '')
+  const normType = (productType || 'tshirt').toLowerCase()
+  const isBack = view === 'back' || view.toLowerCase().includes('back')
+  const normColor = (color || '#FFFFFF').toUpperCase()
+
+  const { assetUrl, directAsset } = getPhotorealisticBlank(normType, isBack ? 'back' : 'front', normColor)
+
+  const cleanHex = normColor.replace('#', '')
+  const r = (parseInt(cleanHex.substring(0, 2), 16) || 255) / 255
+  const g = (parseInt(cleanHex.substring(2, 4), 16) || 255) / 255
+  const b = (parseInt(cleanHex.substring(4, 6), 16) || 255) / 255
+
+  const viewBox = normType === 'tshirt'
+    ? '0 0 985 1024'
+    : normType === 'longsleeve'
+      ? '0 0 1024 953'
+      : '0 0 1024 1024'
+
+  return (
+    <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
+      <svg
+        viewBox={viewBox}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-full h-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.06)] pointer-events-none"
+      >
+        <defs>
+          {!directAsset && (
+            <filter id={`canvas-dye-${normType}-${id}`} colorInterpolationFilters="sRGB">
+              <feColorMatrix
+                type="matrix"
+                values={`
+                  ${r.toFixed(3)} 0 0 0 0
+                  0 ${g.toFixed(3)} 0 0 0
+                  0 0 ${b.toFixed(3)} 0 0
+                  0 0 0 1 0
+                `}
+                result="baseDye"
+              />
+              <feComponentTransfer in="baseDye">
+                <feFuncR type="linear" slope="1.06" intercept="0.015" />
+                <feFuncG type="linear" slope="1.06" intercept="0.015" />
+                <feFuncB type="linear" slope="1.06" intercept="0.015" />
+              </feComponentTransfer>
+            </filter>
+          )}
+        </defs>
+
+        {/* Studio Flat-Lay Photographic Blank */}
+        <image
+          href={assetUrl}
+          x="0"
+          y="0"
+          width={normType === 'tshirt' ? 985 : 1024}
+          height={normType === 'longsleeve' ? 953 : 1024}
+          filter={!directAsset ? `url(#canvas-dye-${normType}-${id})` : undefined}
+        />
+      </svg>
     </div>
   )
 }

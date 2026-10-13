@@ -24,6 +24,9 @@ import {
   RealisticProductPreview,
   renderLayersInSvg,
   PrintMethod,
+  PhotorealisticStudioCanvas,
+  getPhotorealisticBlank,
+  isColorDark,
 } from '@/components/mockups/RealisticFlatLay'
 import { ProductionExportModal } from '@/components/mockups/ProductionExportModal'
 import { calculateLayerDpi } from '@/lib/production/dpiCalculator'
@@ -252,7 +255,7 @@ const PRODUCT_INFO: Record<string, {
     baseCost: 620, retailPrice: 1050,
     printAreas: ['Left chest', 'Right chest', 'Back'],
     colors: [
-      { name: 'Black', hex: '#1A1A12' }, { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'White', hex: '#FFFFFF' }, { name: 'Black', hex: '#1A1A12' }, { name: 'Navy', hex: '#1B2A4A' },
       { name: 'Dark Heather', hex: '#4A4A48' }, { name: 'Forest Green', hex: '#2E4A2E' },
       { name: 'Maroon', hex: '#581825' },
     ],
@@ -485,18 +488,18 @@ const PRINT_AREA_SPECS: Record<string, Record<string, { left: number; top: numbe
     'Sleeve right': { left: 175, top: 120, w: 150, h: 160, label: 'Right Sleeve · 4" × 4"' },
   },
   hoodie: {
-    'Center chest': { left: 156, top: 165, w: 188, h: 160, label: 'Center Chest · 12" × 10"' },
-    'Left chest':   { left: 275, top: 160, w: 70,  h: 70,  label: 'Left Chest (Pocket) · 4" × 4"' },
-    'Right chest':  { left: 155, top: 160, w: 70,  h: 70,  label: 'Right Chest · 4" × 4"' },
-    'Front':        { left: 156, top: 165, w: 188, h: 160, label: 'Front Chest · 12" × 10"' },
-    'Back':         { left: 156, top: 130, w: 188, h: 280, label: 'Back Panel · 12" × 16"' },
+    'Center chest': { left: 157, top: 168, w: 186, h: 136, label: 'Center Chest · 12" × 10"' },
+    'Left chest':   { left: 265, top: 168, w: 76,  h: 76,  label: 'Left Chest (Pocket) · 4" × 4"' },
+    'Right chest':  { left: 159, top: 168, w: 76,  h: 76,  label: 'Right Chest · 4" × 4"' },
+    'Front':        { left: 157, top: 168, w: 186, h: 136, label: 'Front Chest · 12" × 10"' },
+    'Back':         { left: 150, top: 137, w: 200, h: 234, label: 'Back Panel · 12" × 16"' },
     'Back collar':  { left: 215, top: 100, w: 70,  h: 70,  label: 'Back Collar · 3.5" × 3.5"' },
   },
   'hoodie-zip': {
-    'Left chest':   { left: 272, top: 155, w: 76,  h: 76,  label: 'Left Chest · 4" × 4"' },
-    'Right chest':  { left: 152, top: 155, w: 76,  h: 76,  label: 'Right Chest · 4" × 4"' },
-    'Front':        { left: 272, top: 155, w: 76,  h: 76,  label: 'Left Chest · 4" × 4"' },
-    'Back':         { left: 156, top: 130, w: 188, h: 280, label: 'Back Panel · 12" × 16"' },
+    'Left chest':   { left: 261, top: 166, w: 88,  h: 88,  label: 'Left Chest · 4" × 4"' },
+    'Right chest':  { left: 151, top: 166, w: 88,  h: 88,  label: 'Right Chest · 4" × 4"' },
+    'Front':        { left: 261, top: 166, w: 88,  h: 88,  label: 'Left Chest · 4" × 4"' },
+    'Back':         { left: 150, top: 137, w: 200, h: 234, label: 'Back Panel · 12" × 16"' },
   },
   jacket: {
     'Left chest':   { left: 272, top: 152, w: 80,  h: 80,  label: 'Left Chest (Badge) · 4" × 4"' },
@@ -1120,9 +1123,19 @@ export default function ProductCreatorPage() {
   const handleDownloadMockup = async () => {
     setIsExporting(true)
     try {
-      const svgEl = canvasRef.current?.querySelector('svg') || document.querySelector('svg[viewBox="0 0 500 560"]')
+      const isPreview = activeTab === 'preview'
+      const svgEl = isPreview
+        ? (document.querySelector('div[class*="min-h"] svg') ||
+           document.querySelector('svg[viewBox="0 0 1024 1024"]') ||
+           document.querySelector('svg[viewBox="0 0 985 1024"]') ||
+           document.querySelector('svg'))
+        : (canvasRef.current?.querySelector('svg') ||
+           document.querySelector('svg[viewBox="0 0 500 500"]') ||
+           document.querySelector('svg[viewBox="0 0 500 560"]') ||
+           document.querySelector('svg'))
+
       if (!svgEl) {
-        alert('Mockup stage is not loaded yet.')
+        console.warn('Mockup stage is not loaded yet.')
         setIsExporting(false)
         return
       }
@@ -1131,6 +1144,17 @@ export default function ProductCreatorPage() {
       const clonedSvg = svgEl.cloneNode(true) as SVGElement
       const guide = clonedSvg.querySelector('#print-area-guide')
       if (guide) guide.remove()
+
+      // Ensure relative image hrefs inside SVG resolve properly
+      if (typeof window !== 'undefined') {
+        const imageElements = clonedSvg.querySelectorAll('image')
+        imageElements.forEach((img) => {
+          const href = img.getAttribute('href') || img.getAttribute('xlink:href')
+          if (href && href.startsWith('/')) {
+            img.setAttribute('href', `${window.location.origin}${href}`)
+          }
+        })
+      }
 
       const serializer = new XMLSerializer()
       const svgString = serializer.serializeToString(clonedSvg)
@@ -1144,10 +1168,16 @@ export default function ProductCreatorPage() {
         baseImg.src = blobUrl
       })
 
-      const scale = 2.4 // 1200 x 1344 high definition
+      const viewBoxAttr = svgEl.getAttribute('viewBox')
+      const vbParts = viewBoxAttr ? viewBoxAttr.split(' ').map(Number) : [0, 0, 1024, 1024]
+      const svgW = vbParts[2] || 1024
+      const svgH = vbParts[3] || 1024
+
+      const scale = isPreview ? 2.0 : 2.4 // Ultra-HD preview export
+      const isAllAreas = activePrintArea.toLowerCase().includes('all')
       const canvas = document.createElement('canvas')
-      canvas.width = 500 * scale
-      canvas.height = 560 * scale
+      canvas.width = isPreview ? Math.round(svgW * scale) : (isAllAreas ? 780 : 500) * scale
+      canvas.height = isPreview ? Math.round(svgH * scale) : (isAllAreas ? 405 : 500) * scale
       const ctx = canvas.getContext('2d')
       if (!ctx) {
         URL.revokeObjectURL(blobUrl)
@@ -1163,8 +1193,9 @@ export default function ProductCreatorPage() {
       ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height)
       URL.revokeObjectURL(blobUrl)
 
-      // Draw active design layers
-      for (const layer of currentViewLayers) {
+      // Draw active design layers (only needed in Edit mode since Preview SVG already embeds them)
+      if (!isPreview) {
+        for (const layer of currentViewLayers) {
         if (!layer.visible) continue
         ctx.save()
         const cx = (layer.x + layer.width / 2) * scale
@@ -1199,6 +1230,7 @@ export default function ProductCreatorPage() {
         }
         ctx.restore()
       }
+    }
 
       // Download PNG
       canvas.toBlob((pngBlob) => {
@@ -1699,13 +1731,15 @@ export default function ProductCreatorPage() {
                   <button
                     onClick={() => {
                       const text = 'NEW DAY'
-                      const w = 210; const h = 64
+                      const w = Math.min(210, Math.round(printBox.w * 0.88))
+                      const h = Math.max(28, Math.round(w * (64 / 210)))
+                      const fs = Math.max(16, Math.round(44 * (w / 210)))
                       addLayer({
                         type: 'text', text,
                         x: Math.round(printBox.left + (printBox.w - w) / 2),
                         y: Math.round(printBox.top + (printBox.h - h) / 2),
                         width: w, height: h,
-                        rotation: 0, fontSize: 44, fontFamily: 'Impact',
+                        rotation: 0, fontSize: fs, fontFamily: 'Impact',
                         bold: true, color: '#141414', align: 'center',
                         printMethod: 'chenille'
                       })
@@ -1717,13 +1751,15 @@ export default function ProductCreatorPage() {
                   <button
                     onClick={() => {
                       const text = 'STITCHED SCRIPT'
-                      const w = 190; const h = 50
+                      const w = Math.min(190, Math.round(printBox.w * 0.88))
+                      const h = Math.max(26, Math.round(w * (50 / 190)))
+                      const fs = Math.max(14, Math.round(32 * (w / 190)))
                       addLayer({
                         type: 'text', text,
                         x: Math.round(printBox.left + (printBox.w - w) / 2),
                         y: Math.round(printBox.top + (printBox.h - h) / 2),
                         width: w, height: h,
-                        rotation: 0, fontSize: 32, fontFamily: 'Oswald',
+                        rotation: 0, fontSize: fs, fontFamily: 'Oswald',
                         bold: true, color: '#000000', align: 'center',
                         printMethod: 'embroidery'
                       })
@@ -1735,13 +1771,15 @@ export default function ProductCreatorPage() {
                   <button
                     onClick={() => {
                       const text = 'YOUR TITLE'
-                      const w = 180; const h = 48
+                      const w = Math.min(180, Math.round(printBox.w * 0.88))
+                      const h = Math.max(24, Math.round(w * (48 / 180)))
+                      const fs = Math.max(14, Math.round(32 * (w / 180)))
                       addLayer({
                         type: 'text', text,
                         x: Math.round(printBox.left + (printBox.w - w) / 2),
                         y: Math.round(printBox.top + (printBox.h - h) / 2),
                         width: w, height: h,
-                        rotation: 0, fontSize: 32, fontFamily: 'Oswald',
+                        rotation: 0, fontSize: fs, fontFamily: 'Oswald',
                         bold: true, color: '#000000', align: 'center'
                       })
                     }}
@@ -1751,13 +1789,15 @@ export default function ProductCreatorPage() {
                   <button
                     onClick={() => {
                       const text = 'Addis Ababa Studio'
-                      const w = 160; const h = 36
+                      const w = Math.min(160, Math.round(printBox.w * 0.85))
+                      const h = Math.max(22, Math.round(w * (36 / 160)))
+                      const fs = Math.max(12, Math.round(20 * (w / 160)))
                       addLayer({
                         type: 'text', text,
                         x: Math.round(printBox.left + (printBox.w - w) / 2),
                         y: Math.round(printBox.top + (printBox.h - h) / 2),
                         width: w, height: h,
-                        rotation: 0, fontSize: 20, fontFamily: 'Inter',
+                        rotation: 0, fontSize: fs, fontFamily: 'Inter',
                         bold: false, color: '#1A1A12', align: 'center'
                       })
                     }}
@@ -1776,11 +1816,14 @@ export default function ProductCreatorPage() {
                     placeholder="Type text here…"
                     onKeyDown={e => {
                       if (e.key === 'Enter' && addText.trim()) {
+                        const w = Math.min(180, Math.round(printBox.w * 0.88))
+                        const h = Math.max(24, Math.round(w * (40 / 180)))
+                        const fs = Math.max(14, Math.round(26 * (w / 180)))
                         addLayer({
                           type: 'text', text: addText.trim(),
-                          x: Math.round(printBox.left + (printBox.w - 180) / 2),
-                          y: Math.round(printBox.top + (printBox.h - 40) / 2),
-                          width: 180, height: 40, rotation: 0, fontSize: 26,
+                          x: Math.round(printBox.left + (printBox.w - w) / 2),
+                          y: Math.round(printBox.top + (printBox.h - h) / 2),
+                          width: w, height: h, rotation: 0, fontSize: fs,
                           fontFamily: 'Inter', color: '#000000', align: 'center'
                         })
                         setAddText('')
@@ -1791,11 +1834,14 @@ export default function ProductCreatorPage() {
                   <button
                     onClick={() => {
                       if (addText.trim()) {
+                        const w = Math.min(180, Math.round(printBox.w * 0.88))
+                        const h = Math.max(24, Math.round(w * (40 / 180)))
+                        const fs = Math.max(14, Math.round(26 * (w / 180)))
                         addLayer({
                           type: 'text', text: addText.trim(),
-                          x: Math.round(printBox.left + (printBox.w - 180) / 2),
-                          y: Math.round(printBox.top + (printBox.h - 40) / 2),
-                          width: 180, height: 40, rotation: 0, fontSize: 26,
+                          x: Math.round(printBox.left + (printBox.w - w) / 2),
+                          y: Math.round(printBox.top + (printBox.h - h) / 2),
+                          width: w, height: h, rotation: 0, fontSize: fs,
                           fontFamily: 'Inter', color: '#000000', align: 'center'
                         })
                         setAddText('')
@@ -1969,25 +2015,34 @@ export default function ProductCreatorPage() {
                   className="relative rounded-2xl overflow-visible transition-all duration-200"
                   style={{
                     width: activePrintArea.toLowerCase().includes('all') ? 780 : 500,
-                    height: activePrintArea.toLowerCase().includes('all') ? 405 : 560
+                    height: activePrintArea.toLowerCase().includes('all') ? 405 : 500
                   }}
                   onClick={() => setSelectedId(null)}>
 
-                  {/* ── Photorealistic Raw Product Vector Mockup ── */}
+                  {/* ── Photorealistic Raw Product Studio Mockup Underlay ── */}
                   <div className={cn(
                     'absolute inset-0',
                     activePrintArea.toLowerCase().includes('all') ? 'pointer-events-auto' : 'pointer-events-none'
                   )}>
-                    <MockupComponent
-                      color={productColor}
-                      view={mockupView}
-                      className="w-full h-full"
-                      showPrintArea={false}
-                      onSelectArea={(area) => {
-                        setActivePrintArea(area)
-                        setSelectedId(null)
-                      }}
-                    />
+                    {activePrintArea.toLowerCase().includes('all') ? (
+                      <MockupComponent
+                        color={productColor}
+                        view={mockupView}
+                        className="w-full h-full"
+                        showPrintArea={false}
+                        onSelectArea={(area) => {
+                          setActivePrintArea(area)
+                          setSelectedId(null)
+                        }}
+                      />
+                    ) : (
+                      <PhotorealisticStudioCanvas
+                        productType={info.type}
+                        view={mockupView}
+                        color={productColor}
+                        className="w-full h-full"
+                      />
+                    )}
                   </div>
 
                   {/* ── Calibrated Print Area Guide (Hidden on All Areas Overview) ── */}
@@ -2119,6 +2174,16 @@ export default function ProductCreatorPage() {
                               objectFit: 'contain',
                               display: 'block',
                               pointerEvents: 'none',
+                              filter: layer.printMethod === 'vintage'
+                                ? 'contrast(0.96) saturate(0.92)'
+                                : layer.printMethod === 'embroidery'
+                                ? 'contrast(1.04) saturate(1.05) drop-shadow(0 0.8px 0.8px rgba(0,0,0,0.28)) drop-shadow(0 0.3px 0.3px rgba(255,255,255,0.35))'
+                                : layer.printMethod === 'chenille'
+                                ? 'contrast(1.06) saturate(1.08) drop-shadow(0 1.2px 1.5px rgba(0,0,0,0.32))'
+                                : layer.printMethod === 'screen'
+                                ? 'contrast(1.03) drop-shadow(0 0.6px 0.6px rgba(0,0,0,0.18))'
+                                : 'contrast(1.02) saturate(1.02) drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.12))',
+                              mixBlendMode: layer.printMethod === 'vintage' ? 'multiply' : undefined,
                             }}
                             alt=""
                           />
@@ -2156,6 +2221,14 @@ export default function ProductCreatorPage() {
                                 height: '100%',
                                 overflow: 'visible',
                                 pointerEvents: 'none',
+                                filter: layer.printMethod === 'vintage'
+                                  ? 'contrast(0.96)'
+                                  : layer.printMethod === 'embroidery'
+                                  ? 'drop-shadow(0 0.8px 0.8px rgba(0,0,0,0.32)) drop-shadow(0 0.3px 0.3px rgba(255,255,255,0.35))'
+                                  : layer.printMethod === 'chenille'
+                                  ? 'drop-shadow(0 1.2px 1.5px rgba(0,0,0,0.35))'
+                                  : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.12))',
+                                mixBlendMode: layer.printMethod === 'vintage' ? 'multiply' : undefined,
                               }}
                               viewBox={`0 0 ${layer.width} ${layer.height}`}>
                               <defs>
@@ -2197,6 +2270,13 @@ export default function ProductCreatorPage() {
                                 fontStyle: layer.italic ? 'italic' : 'normal',
                                 textAlign: layer.align ?? 'center',
                                 letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
+                                textShadow: layer.printMethod === 'embroidery'
+                                  ? '0 0.8px 1px rgba(0,0,0,0.35), 0 -0.4px 0.4px rgba(255,255,255,0.35)'
+                                  : layer.printMethod === 'chenille'
+                                  ? '0 1px 1.5px rgba(0,0,0,0.40), 0 0 1px rgba(0,0,0,0.20)'
+                                  : '0 0.5px 0.5px rgba(0,0,0,0.12)',
+                                mixBlendMode: layer.printMethod === 'vintage' ? 'multiply' : undefined,
+                                WebkitFontSmoothing: 'antialiased',
                                 whiteSpace: 'nowrap',
                                 lineHeight: 1.1,
                                 width: '100%',
@@ -2490,6 +2570,28 @@ export default function ProductCreatorPage() {
                       </div>
                     )
                   })}
+
+                  {/* ── Fabric Fold & Surface Crease Realistic Passthrough Overlay ── */}
+                  {currentViewLayers.length > 0 && !activePrintArea.toLowerCase().includes('all') && (() => {
+                    const blank = getPhotorealisticBlank(info.type, mockupView, productColor)
+                    const isDarkGarment = isColorDark(productColor)
+                    return (
+                      <div
+                        className="absolute inset-0 pointer-events-none select-none overflow-hidden rounded-2xl"
+                        style={{
+                          mixBlendMode: 'soft-light',
+                          opacity: isDarkGarment ? 0.22 : 0.16,
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={blank.assetUrl}
+                          alt=""
+                          className="w-full h-full object-contain pointer-events-none"
+                        />
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             </div>
@@ -2530,19 +2632,31 @@ export default function ProductCreatorPage() {
                     </div>
                   ) : (
                     /* Photorealistic Studio Vector & Photographic Mockup Stage */
-                    <RealisticProductPreview
-                      productType={info.type}
-                      productId={productId}
-                      view={currentScene.id === 'back' || currentScene.id === 'back-side' ? 'back' : 'front'}
-                      sceneId={currentScene.id}
-                      color={productColor}
-                      colorMode={mockupColorMode}
-                      layers={layers}
-                      printBox={printBox}
-                      printMethod={previewPrintMethod === 'auto' ? undefined : previewPrintMethod}
-                      photoId={currentScene.photoId}
-                      className="w-full h-full max-w-[560px] max-h-[580px]"
-                    />
+                    (() => {
+                      const isBackScene = currentScene.id === 'back' || currentScene.id === 'back-side'
+                      const activeAreaIsBack = activePrintArea.toLowerCase().includes('back')
+                      const scenePrintBox = isBackScene
+                        ? (currentProductAreas['Back'] || printBox)
+                        : (activeAreaIsBack
+                            ? (currentProductAreas['Center chest'] || currentProductAreas['Front'] || currentProductAreas['Left chest'] || Object.values(currentProductAreas)[0])
+                            : printBox)
+
+                      return (
+                        <RealisticProductPreview
+                          productType={info.type}
+                          productId={productId}
+                          view={isBackScene ? 'back' : 'front'}
+                          sceneId={currentScene.id}
+                          color={productColor}
+                          colorMode={mockupColorMode}
+                          layers={layers}
+                          printBox={scenePrintBox}
+                          printMethod={previewPrintMethod === 'auto' ? undefined : previewPrintMethod}
+                          photoId={currentScene.photoId}
+                          className="w-full h-full max-w-[560px] max-h-[580px]"
+                        />
+                      )
+                    })()
                   )}
                 </div>
 
@@ -2774,20 +2888,32 @@ export default function ProductCreatorPage() {
                               <span>SIZE<br/>CHART</span>
                             </div>
                           ) : (
-                            <RealisticProductPreview
-                              productType={info.type}
-                              productId={productId}
-                              view={scene.id === 'back' || scene.id === 'back-side' ? 'back' : 'front'}
-                              sceneId={scene.id}
-                              color={productColor}
-                              colorMode={mockupColorMode}
-                              layers={layers}
-                              printBox={printBox}
-                              printMethod={previewPrintMethod === 'auto' ? undefined : previewPrintMethod}
-                              photoId={scene.photoId}
-                              className="w-full h-full scale-[1.15]"
-                            />
-                          )}
+                          (() => {
+                            const thumbIsBack = scene.id === 'back' || scene.id === 'back-side'
+                            const activeAreaIsBack = activePrintArea.toLowerCase().includes('back')
+                            const thumbPrintBox = thumbIsBack
+                              ? (currentProductAreas['Back'] || printBox)
+                              : (activeAreaIsBack
+                                  ? (currentProductAreas['Center chest'] || currentProductAreas['Front'] || currentProductAreas['Left chest'] || Object.values(currentProductAreas)[0])
+                                  : printBox)
+
+                            return (
+                              <RealisticProductPreview
+                                productType={info.type}
+                                productId={productId}
+                                view={thumbIsBack ? 'back' : 'front'}
+                                sceneId={scene.id}
+                                color={productColor}
+                                colorMode={mockupColorMode}
+                                layers={layers}
+                                printBox={thumbPrintBox}
+                                printMethod={previewPrintMethod === 'auto' ? undefined : previewPrintMethod}
+                                photoId={scene.photoId}
+                                className="w-full h-full scale-[1.15]"
+                              />
+                            )
+                          })()
+                        )}
                         </div>
                         <span className="block text-[10px] font-semibold text-[#1A1A12] truncate w-full leading-tight">
                           {scene.label}
