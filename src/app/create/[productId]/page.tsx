@@ -10,7 +10,7 @@ import {
   ZoomIn, ZoomOut, Move, Maximize2, RotateCw, Eye, EyeOff,
   Copy, Lock, Unlock, Download, Check, Layers as LayersIcon,
   Search, Sliders, SlidersHorizontal, Palette, RefreshCw, FlipHorizontal,
-  Table2, AlertTriangle, ShieldCheck, Grid, Minus
+  Table2, AlertTriangle, ShieldCheck, Grid, Minus, Printer
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MOCKUP_MAP, TShirtMockup, MockupProps } from '@/components/mockups/ProductMockups'
@@ -25,6 +25,8 @@ import {
   renderLayersInSvg,
   PrintMethod,
 } from '@/components/mockups/RealisticFlatLay'
+import { ProductionExportModal } from '@/components/mockups/ProductionExportModal'
+import { calculateLayerDpi } from '@/lib/production/dpiCalculator'
 import { SAMPLE_GRAPHICS, GraphicItem } from '@/lib/sampleGraphics'
 import { SAMPLE_TEMPLATES, DesignTemplate } from '@/lib/sampleTemplates'
 
@@ -676,6 +678,8 @@ export default function ProductCreatorPage() {
   const [showColorPopover, setShowColorPopover] = useState<boolean>(false)
   const [activePrintMethod, setActivePrintMethod] = useState<PrintMethod>('dtg')
   const [previewPrintMethod, setPreviewPrintMethod] = useState<'auto' | PrintMethod>('auto')
+  const [showProductionModal, setShowProductionModal] = useState<boolean>(false)
+  const [showPrintGuides, setShowPrintGuides] = useState<boolean>(true)
 
   // Printify-Style In-Sidebar Variant Selection (Matching Image 2)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string[]>>({
@@ -1344,6 +1348,16 @@ export default function ProductCreatorPage() {
             </button>
           )}
 
+          {/* Commercial 300 DPI Production Package Exporter */}
+          <button
+            onClick={() => setShowProductionModal(true)}
+            disabled={layers.length === 0}
+            className="px-3.5 py-1.5 rounded-xl border border-[#575C46]/30 text-xs font-bold text-white bg-[#575C46] hover:bg-[#434736] transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-40"
+            title="Download commercial 300 DPI production files, panel bleeds & Printify manifest">
+            <Printer size={14} />
+            <span>Export for Print (300 DPI)</span>
+          </button>
+
           <button
             onClick={handleSave}
             disabled={layers.length === 0}
@@ -1988,7 +2002,7 @@ export default function ProductCreatorPage() {
                   </div>
 
                   {/* ── Calibrated Print Area Guide (Hidden on All Areas Overview) ── */}
-                  {!activePrintArea.toLowerCase().includes('all') && (
+                  {!activePrintArea.toLowerCase().includes('all') && showPrintGuides && (
                   <div
                     className="absolute pointer-events-none transition-all duration-200"
                     style={{
@@ -1996,21 +2010,35 @@ export default function ProductCreatorPage() {
                       top: printBox.top,
                       width: printBox.w,
                       height: printBox.h,
-                      border: '1.5px dashed rgba(59, 130, 246, 0.75)',
+                      border: '1.5px dashed rgba(59, 130, 246, 0.85)',
                       borderRadius: 4,
                       boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.40)',
                     }}>
                     {/* Top-right subtle size badge */}
-                    <div className="absolute -top-6 left-0 text-[10px] font-semibold text-blue-600 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded shadow-sm">
-                      {printBox.label}
+                    <div className="absolute -top-6 left-0 text-[10px] font-semibold text-blue-600 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <span>{printBox.label} · Cut Line</span>
                     </div>
+
+                    {/* Outer Bleed Margin Zone (0.5" / 14px outer expansion for Cut & Sew AOP) */}
+                    {info.isAOP && (
+                      <div
+                        className="absolute -inset-[14px] border border-dashed border-cyan-500/80 rounded pointer-events-none"
+                        title="Bleed Margin: Background patterns must extend to this outer line for sewing tolerances">
+                        <div className="absolute -top-5 right-2 text-[9px] font-bold text-cyan-700 bg-cyan-50/95 px-1.5 py-0.5 rounded border border-cyan-200 shadow-xs flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                          <span>0.5" Bleed</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Inner Safe Margin Zone (0.5" / 14px inset) */}
                     <div
-                      className="absolute inset-[14px] border border-dashed border-amber-400/80 rounded pointer-events-none"
+                      className="absolute inset-[14px] border border-dashed border-emerald-500/80 rounded pointer-events-none"
                       title="Safe Print Area: Keep critical text inside this zone">
-                      <div className="absolute -bottom-4 right-1 text-[9px] font-bold text-amber-700 bg-amber-50/95 px-1.5 py-0.2 rounded border border-amber-200 shadow-xs">
-                        Safe area
+                      <div className="absolute -bottom-4 right-1 text-[9px] font-bold text-emerald-700 bg-emerald-50/95 px-1.5 py-0.5 rounded border border-emerald-200 shadow-xs flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span>Safe Area</span>
                       </div>
                     </div>
 
@@ -2196,6 +2224,30 @@ export default function ProductCreatorPage() {
                         {/* ── Selection Handles & Printify Quick Actions ── */}
                         {isSelected && !layer.locked && (
                           <>
+                            {/* Dynamic Real-time DPI Badge Docked on Selected Layer */}
+                            {(() => {
+                              const dpiInfo = calculateLayerDpi(layer, printBox, info.type, activePrintArea)
+                              return (
+                                <div
+                                  onMouseDown={e => e.stopPropagation()}
+                                  style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: layer.type === 'text' ? -116 : -62,
+                                    transform: 'translateX(-50%)',
+                                  }}
+                                  className={cn(
+                                    "rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-md flex items-center gap-1.5 whitespace-nowrap z-40 backdrop-blur-sm pointer-events-auto select-none",
+                                    dpiInfo.colorClass
+                                  )}
+                                  title={dpiInfo.recommendation}
+                                >
+                                  <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", dpiInfo.badgeDotClass)} />
+                                  <span>{dpiInfo.label}</span>
+                                </div>
+                              )
+                            })()}
+
                             {/* Selection border */}
                             <div style={{
                               position: 'absolute', inset: 0,
@@ -2665,11 +2717,40 @@ export default function ProductCreatorPage() {
                 </div>
               )}
 
-              {/* Resolution & Print Quality Badge */}
-              <div className="flex items-center gap-1.5 bg-white border border-[#E5E2DC] shadow-sm rounded-xl px-3 py-1.5 text-xs">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="font-bold text-[#1A1A12]">300 DPI</span>
-                <span className="text-[11px] text-[#8C8880]">· High Quality</span>
+              {/* Dynamic Resolution & Print Quality Badge + Print Guides Toggle */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowPrintGuides(g => !g)}
+                  className={cn(
+                    "flex items-center gap-1.5 border shadow-sm rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all",
+                    showPrintGuides
+                      ? "bg-white border-[#575C46]/30 text-[#1A1A12]"
+                      : "bg-[#F5F4F0] border-[#E5E2DC] text-[#8C8880]"
+                  )}
+                  title="Toggle safe area, cut lines, and bleed margins">
+                  <span className={cn("w-2 h-2 rounded-full", showPrintGuides ? "bg-emerald-500" : "bg-gray-400")} />
+                  <span>{showPrintGuides ? 'Print Guides On' : 'Guides Off'}</span>
+                </button>
+
+                {(() => {
+                  const activeSelected = layers.find(l => l.id === selectedId)
+                  if (activeSelected) {
+                    const dpi = calculateLayerDpi(activeSelected, printBox, info.type, activePrintArea)
+                    return (
+                      <div className={cn("flex items-center gap-1.5 border shadow-sm rounded-xl px-3 py-1.5 text-xs transition-all", dpi.colorClass)}>
+                        <div className={cn("w-2 h-2 rounded-full animate-pulse", dpi.badgeDotClass)} />
+                        <span className="font-bold">{dpi.label}</span>
+                      </div>
+                    )
+                  }
+                  return (
+                    <div className="flex items-center gap-1.5 bg-white border border-[#E5E2DC] shadow-sm rounded-xl px-3 py-1.5 text-xs">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="font-bold text-[#1A1A12]">300 DPI Ready</span>
+                      <span className="text-[11px] text-[#8C8880]">· Printify Parity</span>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}
@@ -3642,6 +3723,19 @@ export default function ProductCreatorPage() {
           </div>
         </div>
       )}
+
+      {/* ── Commercial 300 DPI Production Package Modal (Printify & Factory Floor Parity) ── */}
+      <ProductionExportModal
+        isOpen={showProductionModal}
+        onClose={() => setShowProductionModal(false)}
+        productType={info.type}
+        productInfo={info}
+        colorHex={productColor}
+        colorName={info.colors.find(c => c.hex.toUpperCase() === productColor.toUpperCase())?.name || 'Selected'}
+        size={selectedSize}
+        layers={layers}
+        printMethod={activePrintMethod}
+      />
     </div>
   )
 }
