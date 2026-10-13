@@ -3,9 +3,11 @@
 Pristine Master Studio Production Pipeline for All-Over Print Polo Shirt
 ========================================================================
 Extracts clean, uncorrupted, continuous master blanks from raw studio sources:
-- Zero chewed-off bite marks on the hem or cuffs
-- Zero floor shadow bleed or dye pooling on darker colors
-- Exact sub-pixel anti-aliased fabric boundaries across all 12 colorways
+- Sub-pixel anti-aliased edge matting via 4x Supersampling Anti-Aliasing (SSAA)
+- Intact, straight, unbroken bottom hem at y=941.5 across all colors
+- Clean cuff and sleeve boundaries with zero stair-stepping
+- Identically aligned front and back garment silhouettes
+- Fully calibrated 12-colorway production blanks with specular peak preservation
 """
 
 import os
@@ -13,59 +15,79 @@ import cv2
 import numpy as np
 
 def generate_master_blanks():
-    print("1. Extracting Pristine Front Master from Studio Photo...")
+    print("1. Extracting Pristine Front Master from Studio Photo with 4x SSAA...")
     src_front_path = r'C:\Users\Davea\.gemini\antigravity\brain\437b513a-73e0-4e4b-92bb-e5583cd97c04\.user_uploaded\media_1791840023952_af1d8f5a.png'
     src_front = cv2.imread(src_front_path, cv2.IMREAD_COLOR)
     h, w = src_front.shape[:2]
     gray_front = cv2.cvtColor(src_front, cv2.COLOR_BGR2GRAY)
 
-    # Base fabric mask
-    mask_front = (gray_front <= 236).astype(np.uint8) * 255
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-    closed_front = cv2.morphologyEx(mask_front, cv2.MORPH_CLOSE, kernel)
-    contours, _ = cv2.findContours(closed_front, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    largest_front = max(contours, key=cv2.contourArea)
-    solid_front = np.zeros((h, w), np.uint8)
-    cv2.drawContours(solid_front, [largest_front], -1, 255, thickness=cv2.FILLED)
+    _, thresh_front = cv2.threshold(gray_front, 246, 255, cv2.THRESH_BINARY_INV)
+    # Floor shadow elimination strictly below physical hem
+    thresh_front[942:, :] = 0
 
-    # Smooth physical hem contact trough (natural cloth curve, no artificial argmax jumps)
-    trough_y = np.zeros(w, dtype=np.float32)
-    for x in range(210, 740):
-        trough_y[x] = 936 + np.argmin(gray_front[936:944, x])
-    smoothed_hem = cv2.GaussianBlur(trough_y[210:740].reshape(1, -1), (25, 1), 6.0).flatten()
+    contours_front, _ = cv2.findContours(thresh_front, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    largest_front = max(contours_front, key=cv2.contourArea)
 
-    for i, x in enumerate(range(210, 740)):
-        cutoff = int(round(smoothed_hem[i]))
-        solid_front[cutoff + 1:, x] = 0
+    # 1D Periodic Gaussian trajectory smoothing along closed contour curve
+    from scipy.ndimage import gaussian_filter1d
+    pts_front = largest_front.reshape(-1, 2).astype(np.float32)
+    smooth_fx = gaussian_filter1d(pts_front[:, 0], sigma=2.0, mode='wrap')
+    smooth_fy = gaussian_filter1d(pts_front[:, 1], sigma=2.0, mode='wrap')
+    smooth_pts_front = np.stack([smooth_fx, smooth_fy], axis=1)
 
-    alpha_front = cv2.GaussianBlur(solid_front, (3, 3), 0.6)
+    # 4x Supersampling Anti-Aliasing (SSAA)
+    scale = 4
+    large_h, large_w = h * scale, w * scale
+    large_mask_front = np.zeros((large_h, large_w), np.uint8)
+    scaled_contour_front = (smooth_pts_front * scale).astype(np.int32)
+    cv2.drawContours(large_mask_front, [scaled_contour_front], -1, 255, -1)
+
+    # Clean horizontal hem cutoff in 4x space
+    large_mask_front[int(941.5 * scale):, :] = 0
+
+    # Sub-pixel anti-aliasing Gaussian smoothing in 4x space
+    large_smooth_front = cv2.GaussianBlur(large_mask_front.astype(np.float32), (7, 7), 1.5)
+    alpha_front = cv2.resize(large_smooth_front, (w, h), interpolation=cv2.INTER_AREA)
+    alpha_front = np.clip(alpha_front, 0, 255).astype(np.uint8)
+
     front_rgba = cv2.cvtColor(src_front, cv2.COLOR_BGR2BGRA)
     front_rgba[:, :, 3] = alpha_front
-    front_rgba[solid_front == 0, :3] = 255
-    front_rgba[solid_front == 0, 3] = 0
+    front_rgba[alpha_front == 0, :3] = 255
 
-    print("2. Extracting Pristine Back Master...")
+    print("2. Extracting Pristine Back Master with 4x SSAA & Contour Smoothing...")
     src_back = cv2.imread('scripts/test_clean_aligned_back_v3.png', cv2.IMREAD_UNCHANGED)
-    gray_back = cv2.cvtColor(src_back[:, :, :3], cv2.COLOR_BGR2GRAY)
-    alpha_back = src_back[:, :, 3].copy()
+    back_bgr = src_back[:, :, :3]
+    gray_back = cv2.cvtColor(back_bgr, cv2.COLOR_BGR2GRAY)
 
-    # Eliminate floor shadow below back hem while preserving intact hem fold
-    for x in range(200, 750):
-        for y in range(938, h):
-            if gray_back[y, x] < 200:
-                alpha_back[y, x] = 0
-    alpha_back[941:, :] = 0
+    _, thresh_back = cv2.threshold(gray_back, 246, 255, cv2.THRESH_BINARY_INV)
+    thresh_back[942:, :] = 0
 
-    back_rgba = src_back.copy()
-    back_rgba[:, :, 3] = cv2.GaussianBlur(alpha_back, (3, 3), 0.5)
+    contours_back, _ = cv2.findContours(thresh_back, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    largest_back = max(contours_back, key=cv2.contourArea)
+
+    pts_back = largest_back.reshape(-1, 2).astype(np.float32)
+    smooth_bx = gaussian_filter1d(pts_back[:, 0], sigma=2.0, mode='wrap')
+    smooth_by = gaussian_filter1d(pts_back[:, 1], sigma=2.0, mode='wrap')
+    smooth_pts_back = np.stack([smooth_bx, smooth_by], axis=1)
+
+    large_mask_back = np.zeros((large_h, large_w), np.uint8)
+    scaled_contour_back = (smooth_pts_back * scale).astype(np.int32)
+    cv2.drawContours(large_mask_back, [scaled_contour_back], -1, 255, -1)
+    large_mask_back[int(941.5 * scale):, :] = 0
+
+    large_smooth_back = cv2.GaussianBlur(large_mask_back.astype(np.float32), (7, 7), 1.5)
+    alpha_back = cv2.resize(large_smooth_back, (w, h), interpolation=cv2.INTER_AREA)
+    alpha_back = np.clip(alpha_back, 0, 255).astype(np.uint8)
+
+    back_rgba = cv2.cvtColor(back_bgr, cv2.COLOR_BGR2BGRA)
+    back_rgba[:, :, 3] = alpha_back
     back_rgba[alpha_back == 0, :3] = 255
-    back_rgba[alpha_back == 0, 3] = 0
 
     # Save clean white master blanks
     os.makedirs('public/mockups', exist_ok=True)
     cv2.imwrite('public/mockups/polo-sublimation-front-white.png', front_rgba)
     cv2.imwrite('public/mockups/polo-sublimation-back-white.png', back_rgba)
-    print("Saved pristine master white blanks (zero chewed edges, zero floor shadows).")
+    print("Saved pristine white master blanks with smooth anti-aliased contours.")
 
     # 3. Production Palette (RGB values, brightness multiplier, contrast boost)
     PALETTE = [
@@ -113,7 +135,7 @@ def generate_master_blanks():
         out[:, :, 2] = np.clip(dyed_r, 0, 255)
         out[:, :, 3] = alpha
 
-        # Strict zero-bleed clamp: completely clear outside garment
+        # Pure transparent outside garment
         out[alpha == 0, :3] = 255
         out[alpha == 0, 3] = 0
         return out.astype(np.uint8)

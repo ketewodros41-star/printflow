@@ -65,7 +65,7 @@ function isColorDark(hex: string): boolean {
  * - Vintage Discharge: soft-hand bleached fibers with weathered textile aesthetic
  * - Heat Transfer Vinyl (HTV): uniform matte rubberized cut finish with crisp bevel shadow
  */
-export function PrintTechniqueSvgDefs({ id }: { id: string }) {
+export function PrintTechniqueSvgDefs({ id, isDark = false }: { id: string; isDark?: boolean }) {
   return (
     <>
       {/* ── 1. EMBROIDERY / SEWED STITCHES (3D Satin Stitch Thread Relief, Directional Specular Light & Contact Drop Shadow) ── */}
@@ -76,7 +76,7 @@ export function PrintTechniqueSvgDefs({ id }: { id: string }) {
         </feSpecularLighting>
         <feComposite in="satinSheen" in2="SourceAlpha" operator="in" result="sheenMasked" />
         <feBlend mode="screen" in="SourceGraphic" in2="sheenMasked" result="litThread" />
-        <feDropShadow in="litThread" dx="0.6" dy="1.4" stdDeviation="0.8" floodColor="#000000" floodOpacity="0.45" />
+        <feDropShadow in="litThread" dx="0.6" dy="1.4" stdDeviation="0.8" floodColor="#000000" floodOpacity={isDark ? 0.60 : 0.40} />
       </filter>
 
       {/* ── 1B. CHENILLE / FUZZY MOSS-STITCH (Exact Match to User Image 1: Radiating Yarn Loop Whiskers, Tactile 3D Relief) ── */}
@@ -85,45 +85,58 @@ export function PrintTechniqueSvgDefs({ id }: { id: string }) {
         <feDisplacementMap in="SourceGraphic" in2="loopNoise" scale="4.2" xChannelSelector="R" yChannelSelector="G" result="fringedLoops" />
         <feTurbulence type="fractalNoise" baseFrequency="0.85 0.85" numOctaves="3" result="microFibers" />
         <feDisplacementMap in="fringedLoops" in2="microFibers" scale="1.8" xChannelSelector="B" yChannelSelector="R" result="fuzzyTufts" />
-        <feDropShadow in="fuzzyTufts" dx="0.8" dy="1.6" stdDeviation="0.9" floodColor="#000000" floodOpacity="0.65" result="contactShadow" />
-        <feDropShadow in="contactShadow" dx="2.0" dy="3.2" stdDeviation="2.8" floodColor="#000000" floodOpacity="0.32" />
+        <feDropShadow in="fuzzyTufts" dx="0.8" dy="1.6" stdDeviation="0.9" floodColor="#000000" floodOpacity={isDark ? 0.75 : 0.55} result="contactShadow" />
+        <feDropShadow in="contactShadow" dx="2.0" dy="3.2" stdDeviation="2.8" floodColor="#000000" floodOpacity={isDark ? 0.40 : 0.28} />
       </filter>
 
       {/* ── 2. DIRECT-TO-GARMENT (DTG) (Water-based ink embedded in micro combed-cotton fibers) ── */}
       <filter id={`technique-dtg-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.85 0.85" numOctaves="2" result="fiberGrain" />
-        <feDisplacementMap in="SourceGraphic" in2="fiberGrain" scale="0.75" xChannelSelector="R" yChannelSelector="G" result="embeddedInk" />
-        <feComponentTransfer in="embeddedInk">
+        <feTurbulence type="fractalNoise" baseFrequency="0.55 0.50" numOctaves="2" result="fiberGrain" />
+        <feDisplacementMap in="SourceGraphic" in2="fiberGrain" scale="0.35" xChannelSelector="R" yChannelSelector="G" result="embeddedInk" />
+        <feComponentTransfer in="embeddedInk" result="tonedInk">
           <feFuncR type="linear" slope="1.02" />
           <feFuncG type="linear" slope="1.02" />
           <feFuncB type="linear" slope="1.02" />
         </feComponentTransfer>
+        {isDark ? (
+          <feDropShadow in="tonedInk" dx="0" dy="0.35" stdDeviation="0.3" floodColor="#FFFFFF" floodOpacity="0.16" />
+        ) : (
+          <feDropShadow in="tonedInk" dx="0.2" dy="0.4" stdDeviation="0.3" floodColor="#000000" floodOpacity="0.15" />
+        )}
       </filter>
 
       {/* ── 3. SCREEN PRINTING (Thick opaque plastisol ink layer, crisp stencil edges, subtle ink bevel) ── */}
       <filter id={`technique-screen-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-        <feDropShadow in="SourceGraphic" dx="0.4" dy="0.6" stdDeviation="0.4" floodColor="#000000" floodOpacity="0.32" result="inkRelief" />
-        <feComponentTransfer in="inkRelief">
-          <feFuncR type="linear" slope="1.03" />
-          <feFuncG type="linear" slope="1.03" />
-          <feFuncB type="linear" slope="1.03" />
-        </feComponentTransfer>
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="2" result="screenGrain" />
+        <feDisplacementMap in="SourceGraphic" in2="screenGrain" scale="0.25" xChannelSelector="R" yChannelSelector="G" result="texturedInk" />
+        <feDropShadow in="texturedInk" dx="0.3" dy="0.5" stdDeviation="0.35" floodColor="#000000" floodOpacity={isDark ? 0.40 : 0.22} result="shadowInk" />
+        {isDark && (
+          <feDropShadow in="shadowInk" dx="0" dy="0.35" stdDeviation="0.3" floodColor="#FFFFFF" floodOpacity="0.18" />
+        )}
       </filter>
 
-      {/* ── 4. DIRECT-TO-FILM (DTF) (High vibrancy, razor-sharp edge, smooth polymer film) ── */}
+      {/* ── 4. DIRECT-TO-FILM (DTF) (High vibrancy, razor-sharp edge, smooth polymer film with satin sheen) ── */}
       <filter id={`technique-dtf-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
         <feComponentTransfer in="SourceGraphic" result="vibrantFilm">
-          <feFuncR type="linear" slope="1.05" />
-          <feFuncG type="linear" slope="1.05" />
-          <feFuncB type="linear" slope="1.05" />
+          <feFuncR type="linear" slope="1.04" />
+          <feFuncG type="linear" slope="1.04" />
+          <feFuncB type="linear" slope="1.04" />
         </feComponentTransfer>
-        <feDropShadow in="vibrantFilm" dx="0.3" dy="0.45" stdDeviation="0.3" floodColor="#000000" floodOpacity="0.22" />
+        <feSpecularLighting in="SourceAlpha" surfaceScale="1.4" specularConstant="0.45" specularExponent="18" lightingColor="#FFFFFF" result="filmSheen">
+          <feDistantLight azimuth="220" elevation="65" />
+        </feSpecularLighting>
+        <feComposite in="filmSheen" in2="SourceAlpha" operator="in" result="sheenMasked" />
+        <feBlend mode="screen" in="vibrantFilm" in2="sheenMasked" result="litFilm" />
+        <feDropShadow in="litFilm" dx="0.3" dy="0.5" stdDeviation="0.35" floodColor="#000000" floodOpacity={isDark ? 0.35 : 0.18} result="shadedFilm" />
+        {isDark && (
+          <feDropShadow in="shadedFilm" dx="0" dy="0.35" stdDeviation="0.3" floodColor="#FFFFFF" floodOpacity="0.18" />
+        )}
       </filter>
 
       {/* ── 5. VINTAGE DISCHARGE (Distressed soft-hand discharge, bleached cotton fiber feel) ── */}
       <filter id={`technique-vintage-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
         <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="3" result="vintageNoise" />
-        <feDisplacementMap in="SourceGraphic" in2="vintageNoise" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="weathered" />
+        <feDisplacementMap in="SourceGraphic" in2="vintageNoise" scale="1.0" xChannelSelector="R" yChannelSelector="G" result="weathered" />
         <feColorMatrix in="weathered" type="matrix" values="
           0.96 0 0 0 0.02
           0 0.96 0 0 0.02
@@ -134,7 +147,10 @@ export function PrintTechniqueSvgDefs({ id }: { id: string }) {
 
       {/* ── 6. HEAT TRANSFER VINYL (HTV) (Solid matte rubberized cut finish, crisp bevel edge) ── */}
       <filter id={`technique-vinyl-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-        <feDropShadow in="SourceGraphic" dx="0.4" dy="0.7" stdDeviation="0.35" floodColor="#000000" floodOpacity="0.28" />
+        <feDropShadow in="SourceGraphic" dx="0.4" dy="0.7" stdDeviation="0.35" floodColor="#000000" floodOpacity={isDark ? 0.40 : 0.25} result="shadowVinyl" />
+        {isDark && (
+          <feDropShadow in="shadowVinyl" dx="0" dy="0.35" stdDeviation="0.3" floodColor="#FFFFFF" floodOpacity="0.18" />
+        )}
       </filter>
     </>
   )
@@ -150,7 +166,8 @@ export function renderLayersInSvg(
   side: string = 'front',
   colorMode: 'cmyk' | 'rgb' = 'rgb',
   svgDefsId?: string,
-  globalPrintMethod?: PrintMethod
+  globalPrintMethod?: PrintMethod,
+  isDarkGarment: boolean = false
 ) {
   const normSide = (side || 'front').toLowerCase()
   const relevantLayers = layers.filter(l => {
@@ -203,6 +220,7 @@ export function renderLayersInSvg(
     const transform = `translate(${cx}, ${cy}) rotate(${rot}) scale(${flipX}, 1) translate(${-cx}, ${-cy})`
     const method: PrintMethod = globalPrintMethod || l.printMethod || 'dtg'
     const filterAttr = svgDefsId ? `url(#technique-${method}-${svgDefsId})` : undefined
+    const isDarkText = isColorDark(l.color ?? '#000000')
 
     if (l.type === 'image' && l.src) {
       return (
@@ -257,10 +275,26 @@ export function renderLayersInSvg(
               fontWeight={l.bold ? 'bold' : 'normal'}
               fontStyle={l.italic ? 'italic' : 'normal'}
               letterSpacing={l.letterSpacing ? l.letterSpacing * scaleFactor : 0}
-              stroke={method === 'chenille' || method === 'embroidery' ? (l.color ?? '#000000') : undefined}
-              strokeWidth={method === 'chenille' ? Math.max(1.2, fontSize * 0.055) : method === 'embroidery' ? Math.max(0.6, fontSize * 0.035) : undefined}
+              stroke={
+                method === 'chenille' || method === 'embroidery'
+                  ? (l.color ?? '#000000')
+                  : (isDarkGarment && isDarkText)
+                  ? '#FFFFFF'
+                  : undefined
+              }
+              strokeWidth={
+                method === 'chenille'
+                  ? Math.max(1.2, fontSize * 0.055)
+                  : method === 'embroidery'
+                  ? Math.max(0.6, fontSize * 0.035)
+                  : (isDarkGarment && isDarkText)
+                  ? Math.max(0.6, fontSize * 0.02)
+                  : undefined
+              }
+              strokeOpacity={(isDarkGarment && isDarkText) && method !== 'chenille' && method !== 'embroidery' ? 0.25 : undefined}
               strokeLinejoin="round"
               strokeLinecap="round"
+              style={{ paintOrder: 'stroke fill' }}
             >
               <textPath href={`#${arcPathId}`} startOffset="50%" textAnchor="middle">
                 {l.text}
@@ -324,10 +358,26 @@ export function renderLayersInSvg(
             fontWeight={l.bold ? 'bold' : 'normal'}
             fontStyle={l.italic ? 'italic' : 'normal'}
             letterSpacing={l.letterSpacing ? l.letterSpacing * scaleFactor : 0}
-            stroke={method === 'chenille' || method === 'embroidery' ? (l.color ?? '#000000') : undefined}
-            strokeWidth={method === 'chenille' ? Math.max(1.2, fontSize * 0.055) : method === 'embroidery' ? Math.max(0.6, fontSize * 0.035) : undefined}
+            stroke={
+              method === 'chenille' || method === 'embroidery'
+                ? (l.color ?? '#000000')
+                : (isDarkGarment && isDarkText)
+                ? '#FFFFFF'
+                : undefined
+            }
+            strokeWidth={
+              method === 'chenille'
+                ? Math.max(1.2, fontSize * 0.055)
+                : method === 'embroidery'
+                ? Math.max(0.6, fontSize * 0.035)
+                : (isDarkGarment && isDarkText)
+                ? Math.max(0.6, fontSize * 0.02)
+                : undefined
+            }
+            strokeOpacity={(isDarkGarment && isDarkText) && method !== 'chenille' && method !== 'embroidery' ? 0.25 : undefined}
             strokeLinejoin="round"
             strokeLinecap="round"
+            style={{ paintOrder: 'stroke fill' }}
           >
             {l.text}
           </text>
@@ -797,6 +847,8 @@ export function RealisticPoloFlatLay({
 
   const assetUrl = directAsset || (isBack ? '/mockups/polo-sublimation-back-white.png' : '/mockups/polo-sublimation-front-white.png')
 
+  const neutralBlankUrl = isBack ? '/mockups/polo-sublimation-back-white.png' : '/mockups/polo-sublimation-front-white.png'
+
   // Target coordinates on 954 x 1024 polo canvas
   const mainTargetBox = isBack
     ? { x: 295, y: 200, width: 365, height: 530 }
@@ -864,7 +916,7 @@ export function RealisticPoloFlatLay({
         className="w-full h-full max-h-[580px] drop-shadow-[0_20px_28px_rgba(0,0,0,0.07)]"
       >
         <defs>
-          <PrintTechniqueSvgDefs id={id} />
+          <PrintTechniqueSvgDefs id={id} isDark={isDark} />
 
           {/* Dynamic fabric dye filter (only for custom non-preset colors) */}
           {!directAsset && (
@@ -899,20 +951,31 @@ export function RealisticPoloFlatLay({
             />
           </filter>
 
-          {/* Printify Sublimation Pique Weave: smooth sub-pixel displacement (0.5px) preserving silky anti-aliased contours */}
-          <filter id={`polo-pique-mesh-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.48 0.45" numOctaves="2" result="piqueNoise" />
-            <feDisplacementMap in="SourceGraphic" in2="piqueNoise" scale="0.5" xChannelSelector="R" yChannelSelector="G" result="displacedGraphic" />
-            <feComposite in="displacedGraphic" in2="SourceAlpha" operator="in" result="smoothKnit" />
+          {/* Neutral Grayscale Crease Shading Filter: balanced at 0.50 neutral gray for 0% color bleed on flat fabric */}
+          <filter id={`polo-crease-shading-${id}`} colorInterpolationFilters="sRGB">
+            <feColorMatrix
+              type="matrix"
+              values="
+                0.299 0.587 0.114 0 0
+                0.299 0.587 0.114 0 0
+                0.299 0.587 0.114 0 0
+                0     0     0     1 0"
+              result="grayLuma"
+            />
+            <feComponentTransfer in="grayLuma" result="balancedCrease">
+              <feFuncR type="linear" slope="2.0" intercept="-1.266" />
+              <feFuncG type="linear" slope="2.0" intercept="-1.266" />
+              <feFuncB type="linear" slope="2.0" intercept="-1.266" />
+            </feComponentTransfer>
           </filter>
 
-          {/* Panel Seam Clip Boundaries */}
+          {/* Panel Seam Clip Boundaries aligned to physical hem at y=942 */}
           <clipPath id={`polo-print-clip-front-${id}`}>
-            <path d="M 295,235 C 330,225 380,220 477,220 C 574,220 624,225 659,235 L 728,470 L 733,938 C 650,942 550,941 477,941 C 404,941 304,942 221,938 L 226,470 Z" />
+            <path d="M 295,235 C 330,225 380,220 477,220 C 574,220 624,225 659,235 L 728,470 L 741,942 C 650,942 550,942 477,942 C 404,942 304,942 198,942 L 226,470 Z" />
           </clipPath>
 
           <clipPath id={`polo-print-clip-back-${id}`}>
-            <path d="M 365,142 C 420,158 535,158 590,142 L 665,220 L 728,470 L 733,938 C 650,942 550,941 477,941 C 404,941 304,942 221,938 L 226,470 L 289,220 Z" />
+            <path d="M 365,142 C 420,158 535,158 590,142 L 665,220 L 728,470 L 741,942 C 650,942 550,942 477,942 C 404,942 304,942 198,942 L 226,470 L 289,220 Z" />
           </clipPath>
 
           <clipPath id={`polo-collar-clip-${id}`}>
@@ -944,7 +1007,10 @@ export function RealisticPoloFlatLay({
                   POLO_TORSO_PRINT_BOX,
                   mainTargetBox,
                   isBack ? 'back' : 'front',
-                  colorMode
+                  colorMode,
+                  undefined,
+                  undefined,
+                  isDark
                 )}
               </g>
             </mask>
@@ -958,7 +1024,10 @@ export function RealisticPoloFlatLay({
                   POLO_COLLAR_PRINT_BOX,
                   collarTargetBox,
                   'collar',
-                  colorMode
+                  colorMode,
+                  undefined,
+                  undefined,
+                  isDark
                 )}
               </g>
             </mask>
@@ -972,7 +1041,10 @@ export function RealisticPoloFlatLay({
                   POLO_PLACKET_PRINT_BOX,
                   placketTargetBox,
                   'placket',
-                  colorMode
+                  colorMode,
+                  undefined,
+                  undefined,
+                  isDark
                 )}
               </g>
             </mask>
@@ -986,7 +1058,10 @@ export function RealisticPoloFlatLay({
                   POLO_SLEEVE_PRINT_BOX,
                   rightSleeveTargetBox,
                   'sleeve_right',
-                  colorMode
+                  colorMode,
+                  undefined,
+                  undefined,
+                  isDark
                 )}
               </g>
             </mask>
@@ -1000,7 +1075,10 @@ export function RealisticPoloFlatLay({
                   POLO_SLEEVE_PRINT_BOX,
                   leftSleeveTargetBox,
                   'sleeve_left',
-                  colorMode
+                  colorMode,
+                  undefined,
+                  undefined,
+                  isDark
                 )}
               </g>
             </mask>
@@ -1024,9 +1102,8 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-main-stage"
               clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
-              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
-                mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+                mixBlendMode: printMethod === 'vintage' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
               }}
             >
@@ -1037,26 +1114,28 @@ export function RealisticPoloFlatLay({
                 isBack ? 'back' : 'front',
                 colorMode,
                 id,
-                printMethod
+                printMethod,
+                isDark
               )}
             </g>
-            {/* Seamless Fabric Crease Drape (Only over artwork pixels via mask) */}
+            {/* Seamless Fabric Crease Drape (Only over artwork pixels via mask, using neutral white luminance map) */}
             <g
               clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
               mask={`url(#polo-art-mask-main-${id})`}
               style={{
-                mixBlendMode: isDark ? 'soft-light' : 'multiply',
+                mixBlendMode: 'soft-light',
                 pointerEvents: 'none',
               }}
-              opacity={isDark ? 0.35 : 0.20}
+              opacity={0.16}
             >
               <image
-                href={assetUrl}
+                href={neutralBlankUrl}
                 x="0"
                 y="0"
                 width="954"
                 height="1024"
                 preserveAspectRatio="xMidYMid meet"
+                filter={`url(#polo-crease-shading-${id})`}
               />
             </g>
           </>
@@ -1068,9 +1147,8 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-collar-stage"
               clipPath={`url(#polo-collar-clip-${id})`}
-              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
-                mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+                mixBlendMode: printMethod === 'vintage' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
               }}
             >
@@ -1081,7 +1159,8 @@ export function RealisticPoloFlatLay({
                 'collar',
                 colorMode,
                 id,
-                printMethod
+                printMethod,
+                isDark
               )}
             </g>
             {/* Seamless Collar Crease Drape */}
@@ -1089,18 +1168,19 @@ export function RealisticPoloFlatLay({
               clipPath={`url(#polo-collar-clip-${id})`}
               mask={`url(#polo-art-mask-collar-${id})`}
               style={{
-                mixBlendMode: isDark ? 'soft-light' : 'multiply',
+                mixBlendMode: 'soft-light',
                 pointerEvents: 'none',
               }}
-              opacity={isDark ? 0.35 : 0.20}
+              opacity={0.16}
             >
               <image
-                href={assetUrl}
+                href={neutralBlankUrl}
                 x="0"
                 y="0"
                 width="954"
                 height="1024"
                 preserveAspectRatio="xMidYMid meet"
+                filter={`url(#polo-crease-shading-${id})`}
               />
             </g>
           </>
@@ -1112,9 +1192,8 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-placket-stage"
               clipPath={`url(#polo-placket-clip-${id})`}
-              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
-                mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+                mixBlendMode: printMethod === 'vintage' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
               }}
             >
@@ -1125,7 +1204,8 @@ export function RealisticPoloFlatLay({
                 'placket',
                 colorMode,
                 id,
-                printMethod
+                printMethod,
+                isDark
               )}
             </g>
             {/* Seamless Placket Crease Drape */}
@@ -1133,18 +1213,19 @@ export function RealisticPoloFlatLay({
               clipPath={`url(#polo-placket-clip-${id})`}
               mask={`url(#polo-art-mask-placket-${id})`}
               style={{
-                mixBlendMode: isDark ? 'soft-light' : 'multiply',
+                mixBlendMode: 'soft-light',
                 pointerEvents: 'none',
               }}
-              opacity={isDark ? 0.35 : 0.20}
+              opacity={0.16}
             >
               <image
-                href={assetUrl}
+                href={neutralBlankUrl}
                 x="0"
                 y="0"
                 width="954"
                 height="1024"
                 preserveAspectRatio="xMidYMid meet"
+                filter={`url(#polo-crease-shading-${id})`}
               />
             </g>
           </>
@@ -1156,9 +1237,8 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-right-sleeve-stage"
               clipPath={isBack ? `url(#polo-screen-right-sleeve-clip-${id})` : `url(#polo-screen-left-sleeve-clip-${id})`}
-              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
-                mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+                mixBlendMode: printMethod === 'vintage' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
               }}
             >
@@ -1169,7 +1249,8 @@ export function RealisticPoloFlatLay({
                 'sleeve_right',
                 colorMode,
                 id,
-                printMethod
+                printMethod,
+                isDark
               )}
             </g>
             {/* Seamless Right Sleeve Crease Drape */}
@@ -1177,18 +1258,19 @@ export function RealisticPoloFlatLay({
               clipPath={isBack ? `url(#polo-screen-right-sleeve-clip-${id})` : `url(#polo-screen-left-sleeve-clip-${id})`}
               mask={`url(#polo-art-mask-right-sleeve-${id})`}
               style={{
-                mixBlendMode: isDark ? 'soft-light' : 'multiply',
+                mixBlendMode: 'soft-light',
                 pointerEvents: 'none',
               }}
-              opacity={isDark ? 0.35 : 0.20}
+              opacity={0.16}
             >
               <image
-                href={assetUrl}
+                href={neutralBlankUrl}
                 x="0"
                 y="0"
                 width="954"
                 height="1024"
                 preserveAspectRatio="xMidYMid meet"
+                filter={`url(#polo-crease-shading-${id})`}
               />
             </g>
           </>
@@ -1200,9 +1282,8 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-left-sleeve-stage"
               clipPath={isBack ? `url(#polo-screen-left-sleeve-clip-${id})` : `url(#polo-screen-right-sleeve-clip-${id})`}
-              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
-                mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
+                mixBlendMode: printMethod === 'vintage' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
               }}
             >
@@ -1213,7 +1294,8 @@ export function RealisticPoloFlatLay({
                 'sleeve_left',
                 colorMode,
                 id,
-                printMethod
+                printMethod,
+                isDark
               )}
             </g>
             {/* Seamless Left Sleeve Crease Drape */}
@@ -1221,18 +1303,19 @@ export function RealisticPoloFlatLay({
               clipPath={isBack ? `url(#polo-screen-left-sleeve-clip-${id})` : `url(#polo-screen-right-sleeve-clip-${id})`}
               mask={`url(#polo-art-mask-left-sleeve-${id})`}
               style={{
-                mixBlendMode: isDark ? 'soft-light' : 'multiply',
+                mixBlendMode: 'soft-light',
                 pointerEvents: 'none',
               }}
-              opacity={isDark ? 0.35 : 0.20}
+              opacity={0.16}
             >
               <image
-                href={assetUrl}
+                href={neutralBlankUrl}
                 x="0"
                 y="0"
                 width="954"
                 height="1024"
                 preserveAspectRatio="xMidYMid meet"
+                filter={`url(#polo-crease-shading-${id})`}
               />
             </g>
           </>
