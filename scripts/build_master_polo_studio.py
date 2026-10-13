@@ -1,27 +1,73 @@
 #!/usr/bin/env python3
 """
-Master Studio Production Pipeline for All-Over Print Polo Shirt
-==============================================================
-Generates pixel-perfect Front and Back studio blanks across 12 production colors
-with strict ZERO-BLEED guarantees (no floor shadow pooling, no halo artifacts).
+Pristine Master Studio Production Pipeline for All-Over Print Polo Shirt
+========================================================================
+Extracts clean, uncorrupted, continuous master blanks from raw studio sources:
+- Zero chewed-off bite marks on the hem or cuffs
+- Zero floor shadow bleed or dye pooling on darker colors
+- Exact sub-pixel anti-aliased fabric boundaries across all 12 colorways
 """
 
 import os
 import cv2
 import numpy as np
 
-def build_master_polo():
-    print("1. Loading Clean Front and Back Master Bases...")
-    master_front_rgba = cv2.imread('scripts/test_smooth_hem.png', cv2.IMREAD_UNCHANGED)
-    master_back_rgba = cv2.imread('scripts/test_clean_aligned_back_v3.png', cv2.IMREAD_UNCHANGED)
+def generate_master_blanks():
+    print("1. Extracting Pristine Front Master from Studio Photo...")
+    src_front_path = r'C:\Users\Davea\.gemini\antigravity\brain\437b513a-73e0-4e4b-92bb-e5583cd97c04\.user_uploaded\media_1791840023952_af1d8f5a.png'
+    src_front = cv2.imread(src_front_path, cv2.IMREAD_COLOR)
+    h, w = src_front.shape[:2]
+    gray_front = cv2.cvtColor(src_front, cv2.COLOR_BGR2GRAY)
 
-    # Save master white blanks
+    # Base fabric mask
+    mask_front = (gray_front <= 236).astype(np.uint8) * 255
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    closed_front = cv2.morphologyEx(mask_front, cv2.MORPH_CLOSE, kernel)
+    contours, _ = cv2.findContours(closed_front, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    largest_front = max(contours, key=cv2.contourArea)
+    solid_front = np.zeros((h, w), np.uint8)
+    cv2.drawContours(solid_front, [largest_front], -1, 255, thickness=cv2.FILLED)
+
+    # Smooth physical hem contact trough (natural cloth curve, no artificial argmax jumps)
+    trough_y = np.zeros(w, dtype=np.float32)
+    for x in range(210, 740):
+        trough_y[x] = 936 + np.argmin(gray_front[936:944, x])
+    smoothed_hem = cv2.GaussianBlur(trough_y[210:740].reshape(1, -1), (25, 1), 6.0).flatten()
+
+    for i, x in enumerate(range(210, 740)):
+        cutoff = int(round(smoothed_hem[i]))
+        solid_front[cutoff + 1:, x] = 0
+
+    alpha_front = cv2.GaussianBlur(solid_front, (3, 3), 0.6)
+    front_rgba = cv2.cvtColor(src_front, cv2.COLOR_BGR2BGRA)
+    front_rgba[:, :, 3] = alpha_front
+    front_rgba[solid_front == 0, :3] = 255
+    front_rgba[solid_front == 0, 3] = 0
+
+    print("2. Extracting Pristine Back Master...")
+    src_back = cv2.imread('scripts/test_clean_aligned_back_v3.png', cv2.IMREAD_UNCHANGED)
+    gray_back = cv2.cvtColor(src_back[:, :, :3], cv2.COLOR_BGR2GRAY)
+    alpha_back = src_back[:, :, 3].copy()
+
+    # Eliminate floor shadow below back hem while preserving intact hem fold
+    for x in range(200, 750):
+        for y in range(938, h):
+            if gray_back[y, x] < 200:
+                alpha_back[y, x] = 0
+    alpha_back[941:, :] = 0
+
+    back_rgba = src_back.copy()
+    back_rgba[:, :, 3] = cv2.GaussianBlur(alpha_back, (3, 3), 0.5)
+    back_rgba[alpha_back == 0, :3] = 255
+    back_rgba[alpha_back == 0, 3] = 0
+
+    # Save clean white master blanks
     os.makedirs('public/mockups', exist_ok=True)
-    cv2.imwrite('public/mockups/polo-sublimation-front-white.png', master_front_rgba)
-    cv2.imwrite('public/mockups/polo-sublimation-back-white.png', master_back_rgba)
-    print("Saved clean master white blanks.")
+    cv2.imwrite('public/mockups/polo-sublimation-front-white.png', front_rgba)
+    cv2.imwrite('public/mockups/polo-sublimation-back-white.png', back_rgba)
+    print("Saved pristine master white blanks (zero chewed edges, zero floor shadows).")
 
-    # 2. Production Palette (RGB values)
+    # 3. Production Palette (RGB values, brightness multiplier, contrast boost)
     PALETTE = [
         ("white", "#FFFFFF", (250, 250, 248), 1.0, 1.0),
         ("black", "#1A1A12", (26, 26, 18), 1.0, 1.25),
@@ -52,7 +98,6 @@ def build_master_polo():
         S_curved = np.power(S, c_boost)
 
         target_r, target_g, target_b = color_rgb
-        # Note: In OpenCV BGR format:
         dyed_b = S_curved * target_b * b_mult
         dyed_g = S_curved * target_g * b_mult
         dyed_r = S_curved * target_r * b_mult
@@ -68,23 +113,23 @@ def build_master_polo():
         out[:, :, 2] = np.clip(dyed_r, 0, 255)
         out[:, :, 3] = alpha
 
-        # Strict zero-bleed clamp
+        # Strict zero-bleed clamp: completely clear outside garment
         out[alpha == 0, :3] = 255
         out[alpha == 0, 3] = 0
         return out.astype(np.uint8)
 
-    print("3. Generating 12 Production Colors for Front and Back...")
+    print("4. Generating all 24 production blanks across 12 colors...")
     for slug, hex_code, rgb, b_mult, c_boost in PALETTE:
         if slug == "white":
             continue
-        front_dyed = dye_blank(master_front_rgba, rgb, b_mult, c_boost)
-        back_dyed = dye_blank(master_back_rgba, rgb, b_mult, c_boost)
+        front_dyed = dye_blank(front_rgba, rgb, b_mult, c_boost)
+        back_dyed = dye_blank(back_rgba, rgb, b_mult, c_boost)
 
         cv2.imwrite(f'public/mockups/polo-sublimation-front-{slug}.png', front_dyed)
         cv2.imwrite(f'public/mockups/polo-sublimation-back-{slug}.png', back_dyed)
         print(f"  -> Generated polo-sublimation front/back for {slug} ({hex_code})")
 
-    print("Master Studio Production Blanks successfully created with zero-bleed guarantee!")
+    print("All 24 production blanks generated successfully with intact pristine edges!")
 
-if __name__ == "__main__":
-    build_master_polo()
+if __name__ == '__main__':
+    generate_master_blanks()

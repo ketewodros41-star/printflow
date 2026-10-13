@@ -1024,7 +1024,7 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-main-stage"
               clipPath={isBack ? `url(#polo-print-clip-back-${id})` : `url(#polo-print-clip-front-${id})`}
-              filter={`url(#polo-pique-mesh-${id})`}
+              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
                 mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
@@ -1036,7 +1036,7 @@ export function RealisticPoloFlatLay({
                 mainTargetBox,
                 isBack ? 'back' : 'front',
                 colorMode,
-                undefined,
+                id,
                 printMethod
               )}
             </g>
@@ -1068,7 +1068,7 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-collar-stage"
               clipPath={`url(#polo-collar-clip-${id})`}
-              filter={`url(#polo-pique-mesh-${id})`}
+              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
                 mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
@@ -1080,7 +1080,7 @@ export function RealisticPoloFlatLay({
                 collarTargetBox,
                 'collar',
                 colorMode,
-                undefined,
+                id,
                 printMethod
               )}
             </g>
@@ -1112,7 +1112,7 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-placket-stage"
               clipPath={`url(#polo-placket-clip-${id})`}
-              filter={`url(#polo-pique-mesh-${id})`}
+              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
                 mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
@@ -1124,7 +1124,7 @@ export function RealisticPoloFlatLay({
                 placketTargetBox,
                 'placket',
                 colorMode,
-                undefined,
+                id,
                 printMethod
               )}
             </g>
@@ -1156,7 +1156,7 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-right-sleeve-stage"
               clipPath={isBack ? `url(#polo-screen-right-sleeve-clip-${id})` : `url(#polo-screen-left-sleeve-clip-${id})`}
-              filter={`url(#polo-pique-mesh-${id})`}
+              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
                 mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
@@ -1168,7 +1168,7 @@ export function RealisticPoloFlatLay({
                 rightSleeveTargetBox,
                 'sleeve_right',
                 colorMode,
-                undefined,
+                id,
                 printMethod
               )}
             </g>
@@ -1200,7 +1200,7 @@ export function RealisticPoloFlatLay({
             <g
               id="polo-left-sleeve-stage"
               clipPath={isBack ? `url(#polo-screen-left-sleeve-clip-${id})` : `url(#polo-screen-right-sleeve-clip-${id})`}
-              filter={`url(#polo-pique-mesh-${id})`}
+              filter={(!printMethod || printMethod === 'dtg') ? `url(#polo-pique-mesh-${id})` : undefined}
               style={{
                 mixBlendMode: !isDark || colorMode === 'cmyk' ? 'multiply' : 'normal',
                 filter: 'contrast(1.02) saturate(1.02)',
@@ -1212,7 +1212,7 @@ export function RealisticPoloFlatLay({
                 leftSleeveTargetBox,
                 'sleeve_left',
                 colorMode,
-                undefined,
+                id,
                 printMethod
               )}
             </g>
