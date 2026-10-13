@@ -95,8 +95,8 @@ def photometrically_dye(base_rgba, target_rgb, brightness_mult=1.0, contrast_boo
     return out
 
 def main():
-    front_src = r"C:\Users\Davea\.gemini\antigravity\brain\9015c630-3b8c-411c-8ee8-77bd6d7f8b45\studio_tank_top_1791902662668.jpg"
-    back_src = r"C:\Users\Davea\.gemini\antigravity\brain\9015c630-3b8c-411c-8ee8-77bd6d7f8b45\studio_tank_back_1791902700359.jpg"
+    front_src = r"C:\Users\Davea\.gemini\antigravity\brain\71887c33-fad6-4f0b-a2af-673ab5c3302b\tank_front_notag_1791920056734.jpg"
+    back_src = r"C:\Users\Davea\.gemini\antigravity\brain\71887c33-fad6-4f0b-a2af-673ab5c3302b\tank_flat_back_1791919923392.jpg"
     out_dir = "public/mockups"
     
     print("Extracting tank blanks...")
@@ -106,7 +106,6 @@ def main():
     cv2.imwrite(os.path.join(out_dir, "tank-flatlay-white.png"), tank_front_white)
     cv2.imwrite(os.path.join(out_dir, "tank-flatlay-back-white.png"), tank_back_white)
     cv2.imwrite(os.path.join(out_dir, "tank-flatlay-front-white.png"), tank_front_white)
-    cv2.imwrite(os.path.join(out_dir, "tank-flatlay-back-white.png"), tank_back_white)
     print("Saved white tank blanks.")
     
     for slug, hex_code, target_rgb, b_mult, c_boost in PRODUCTION_PALETTE:

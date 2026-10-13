@@ -2135,7 +2135,7 @@ export function RealisticTankTopFlatLay({
   className = '',
   colorMode = 'rgb',
   layers = [],
-  printBox = { left: 160, top: 145, w: 180, h: 240 },
+  printBox,
   printMethod,
   children,
 }: RealisticFlatLayProps) {
@@ -2155,17 +2155,17 @@ export function RealisticTankTopFlatLay({
 
   const assetUrl = directAsset || (isBack ? '/mockups/tank-flatlay-back-white.png' : '/mockups/tank-flatlay-white.png')
 
-  // Target coordinates calibrated on 1024x1024 photographic studio muscle tank blank
-  const targetChest = printBox
-    ? {
-        x: (printBox.left / 500) * 1024,
-        y: (printBox.top / 500) * 1024,
-        width: (printBox.w / 500) * 1024,
-        height: (printBox.h / 500) * 1024,
-      }
-    : (isBack
-        ? { x: 335, y: 230, width: 354, height: 480 }
-        : { x: 335, y: 270, width: 354, height: 460 })
+  // 1:1 Scale & Coordinate Parity: directly project from printBox with 1024/500 ratio
+  const resolvedPrintBox = printBox || (isBack
+    ? { left: 160, top: 130, w: 180, h: 260 }
+    : { left: 160, top: 145, w: 180, h: 240 })
+
+  const targetChest = {
+    x: (resolvedPrintBox.left / 500) * 1024,
+    y: (resolvedPrintBox.top / 500) * 1024,
+    width: (resolvedPrintBox.w / 500) * 1024,
+    height: (resolvedPrintBox.h / 500) * 1024,
+  }
 
   return (
     <div className={`relative w-full h-full flex items-center justify-center select-none ${className}`}>
@@ -2216,15 +2216,8 @@ export function RealisticTankTopFlatLay({
             filter: 'contrast(1.02) saturate(1.02)',
           }}
         >
-          {renderLayersInSvg(layers, printBox, targetChest, view, colorMode, id, printMethod, isDark)}
+          {renderLayersInSvg(layers, resolvedPrintBox, targetChest, view, colorMode, id, printMethod, isDark)}
         </g>
-
-        {/* Physical Cotton Jersey Fold Crease Overlay */}
-        {layers.length > 0 && (
-          <g style={{ mixBlendMode: 'soft-light', pointerEvents: 'none' }} opacity={0.14}>
-            <image href={assetUrl} x="0" y="0" width="1024" height="1024" />
-          </g>
-        )}
       </svg>
       {children}
     </div>
@@ -2902,7 +2895,7 @@ export function getPhotorealisticBlank(
   } else if (normType === 'tshirt' || normType.includes('tshirt')) {
     directAsset = isBack ? TSHIRT_BACK_ASSETS[normColor] : TSHIRT_FLATLAY_ASSETS[normColor]
     fallback = isBack ? '/mockups/tshirt-flatlay-back-white.png' : '/mockups/tshirt-flatlay-white.png'
-  } else if (normType === 'tank' || normType.includes('tank')) {
+  } else if (normType === 'tank' || normType.includes('tank') || normType.includes('muscle') || normType.includes('sleeveless')) {
     directAsset = isBack ? TANK_FLATLAY_BACK_ASSETS[normColor] : TANK_FLATLAY_FRONT_ASSETS[normColor]
     fallback = isBack ? '/mockups/tank-flatlay-back-white.png' : '/mockups/tank-flatlay-white.png'
   } else if (normType === 'polo' || normType.includes('polo')) {
