@@ -52,14 +52,14 @@ export function TShirtMockup({
   if (isSleeve) {
     const isLeft = view === 'sleeve_left'
     return (
-      <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
         <defs>
           <filter id={`sleeve-shadow-${id}`} x="-10%" y="-10%" width="125%" height="130%">
             <feDropShadow dx="0" dy="12" stdDeviation="14" floodColor="#000" floodOpacity="0.10" />
           </filter>
         </defs>
         {/* Sleeve base profile */}
-        <g transform={isLeft ? 'translate(0,0)' : 'translate(500,0) scale(-1,1)'}>
+        <g transform={isLeft ? 'translate(0, 30)' : 'translate(500, 30) scale(-1,1)'}>
           <path
             d="M 160 90 C 210 80, 270 85, 330 110 L 370 280 C 370 295, 360 305, 345 305 L 180 305 C 165 305, 155 295, 155 280 Z"
             fill="#000" opacity="0.08" transform="translate(0, 10)" filter={`url(#sleeve-shadow-${id})`}
@@ -369,7 +369,7 @@ export function MugMockup({
   const isWrap = view === 'wrap'
 
   return (
-    <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         {/* Cylindrical ceramic shading */}
         <linearGradient id={`mug-body-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -405,14 +405,14 @@ export function MugMockup({
       </defs>
 
       {/* ── Floor Contact & Ambient Shadow ── */}
-      <ellipse cx="230" cy="430" rx="140" ry="16" fill="#1A1A12" opacity={dark ? 0.22 : 0.10} filter="blur(8px)" />
-      <ellipse cx="230" cy="430" rx="100" ry="8" fill="#1A1A12" opacity={dark ? 0.30 : 0.15} filter="blur(3px)" />
+      <ellipse cx={isWrap ? 250 : 230} cy="455" rx={isWrap ? 180 : 130} ry="16" fill="#1A1A12" opacity={dark ? 0.22 : 0.10} filter="blur(8px)" />
+      <ellipse cx={isWrap ? 250 : 230} cy="455" rx={isWrap ? 140 : 95} ry="8" fill="#1A1A12" opacity={dark ? 0.30 : 0.15} filter="blur(3px)" />
 
       {/* ── Ceramic C-Handle ── */}
       {!isWrap && (
         <g id="mug-handle" transform={isLeftHandle ? 'translate(460, 0) scale(-1, 1)' : undefined}>
           <path
-            d="M 330 150 C 420 150, 445 200, 445 270 C 445 340, 415 375, 330 375 L 330 335 C 390 335, 410 310, 410 270 C 410 215, 385 185, 330 185 Z"
+            d="M 330 160 C 420 160, 445 210, 445 280 C 445 350, 415 385, 330 385 L 330 345 C 390 345, 410 320, 410 280 C 410 225, 385 195, 330 195 Z"
             fill={`url(#mug-handle-${id})`}
             stroke={dark ? '#454550' : '#1A1A12'}
             strokeOpacity={dark ? 0.6 : 0.18}
@@ -420,7 +420,7 @@ export function MugMockup({
           />
           {/* Specular ridge catch */}
           <path
-            d="M 335 155 C 418 155, 440 202, 440 270 C 440 335, 412 370, 335 370"
+            d="M 335 165 C 418 165, 440 212, 440 280 C 440 345, 412 380, 335 380"
             stroke="#FFFFFF"
             strokeOpacity={dark ? 0.4 : 0.8}
             strokeWidth="1.5"
@@ -433,8 +433,8 @@ export function MugMockup({
         <path
           d={
             isWrap
-              ? 'M 80 100 L 80 395 C 80 425, 420 425, 420 395 L 420 100 Z'
-              : 'M 120 100 L 120 395 C 120 422, 340 422, 340 395 L 340 100 Z'
+              ? 'M 90 100 L 90 425 C 90 452, 410 452, 410 425 L 410 100 Z'
+              : 'M 130 100 L 130 425 C 130 452, 330 452, 330 425 L 330 100 Z'
           }
           fill={`url(#mug-body-${id})`}
           stroke={dark ? '#454550' : '#1A1A12'}
@@ -447,7 +447,7 @@ export function MugMockup({
           x={isWrap ? 130 : 156}
           y="100"
           width={isWrap ? 45 : 32}
-          height="300"
+          height="325"
           fill={`url(#mug-specular-${id})`}
         />
 
@@ -455,8 +455,8 @@ export function MugMockup({
         <path
           d={
             isWrap
-              ? 'M 82 395 C 90 423, 410 423, 418 395'
-              : 'M 122 395 C 130 420, 330 420, 338 395'
+              ? 'M 92 425 C 100 450, 400 450, 408 425'
+              : 'M 132 425 C 140 450, 320 450, 328 425'
           }
           stroke="#FFFFFF"
           strokeOpacity={dark ? 0.25 : 0.9}
@@ -467,16 +467,16 @@ export function MugMockup({
         <ellipse
           cx={isWrap ? 250 : 230}
           cy="100"
-          rx={isWrap ? 170 : 110}
-          ry="24"
+          rx={isWrap ? 160 : 100}
+          ry="20"
           fill={`url(#mug-cavity-${id})`}
         />
         {/* Glossy top rim ring */}
         <ellipse
           cx={isWrap ? 250 : 230}
           cy="100"
-          rx={isWrap ? 170 : 110}
-          ry="24"
+          rx={isWrap ? 160 : 100}
+          ry="20"
           stroke="#FFFFFF"
           strokeWidth="3"
           strokeOpacity={dark ? 0.3 : 0.9}
@@ -484,8 +484,8 @@ export function MugMockup({
         <ellipse
           cx={isWrap ? 250 : 230}
           cy="100"
-          rx={isWrap ? 170 : 110}
-          ry="24"
+          rx={isWrap ? 160 : 100}
+          ry="20"
           stroke={dark ? '#454550' : '#1A1A12'}
           strokeWidth="1.2"
           strokeOpacity={dark ? 0.6 : 0.22}
@@ -513,9 +513,9 @@ export function MugMockup({
       {/* Ceramic gloss reflection overlay across printed artwork */}
       <rect
         x={isWrap ? 145 : 175}
-        y="125"
+        y="135"
         width={isWrap ? 28 : 22}
-        height="265"
+        height="280"
         rx="10"
         fill="#FFFFFF"
         opacity={dark ? 0.20 : 0.35}
@@ -538,139 +538,237 @@ export function HoodieMockup({
   const id = useId().replace(/:/g, '')
   const dark = isColorDark(color)
   const isBack = view === 'back'
-  const strokeColor = dark ? '#4A4A52' : '#1A1A12'
-  const strokeOpacity = dark ? 0.6 : 0.25
-  const seamOpacity = dark ? 0.35 : 0.15
+  const isSleeve = view === 'sleeve_left' || view === 'sleeve_right'
 
-  return (
-    <svg viewBox="0 0 500 580" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <filter id={`hoodie-shadow-${id}`} x="-15%" y="-10%" width="130%" height="135%">
-          <feDropShadow dx="0" dy="16" stdDeviation="18" floodColor="#000" floodOpacity={dark ? 0.28 : 0.10} />
-          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity={dark ? 0.18 : 0.07} />
-        </filter>
-        <linearGradient id={`hoodie-body-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity={dark ? 0.10 : 0.85} />
-          <stop offset="50%" stopColor="#FFFFFF" stopOpacity={dark ? 0.03 : 0.15} />
-          <stop offset="100%" stopColor="#000000" stopOpacity={dark ? 0.30 : 0.14} />
-        </linearGradient>
-      </defs>
+  const strokeColor = dark ? '#4E5058' : '#1A1A12'
+  const strokeOpacity = dark ? 0.65 : 0.28
+  const seamOpacity = dark ? 0.40 : 0.16
+  const innerHoodFill = dark ? '#131316' : '#D5D1C7'
 
-      {/* Floor shadow */}
-      <path
-        d="M 160 40 L 90 90 C 60 130, 40 210, 32 290 C 24 370, 30 435, 36 492 L 84 506 L 98 215 L 105 540 L 395 540 L 402 215 L 416 506 L 464 492 C 470 435, 476 370, 468 290 C 460 210, 440 130, 410 90 L 340 40 Z"
-        fill="#000" opacity={dark ? 0.24 : 0.08} transform="translate(0, 14)" filter={`url(#hoodie-shadow-${id})`}
-      />
-
-      {/* ── Main Fleece Body (Full-Length Sleeves) ── */}
-      <path
-        d="M 165 48 L 94 92 C 65 130, 44 210, 36 290 C 28 370, 34 435, 40 490 L 86 502 L 98 215 L 98 480 L 98 524 C 98 534, 108 540, 120 540 L 380 540 C 392 540, 402 534, 402 524 L 402 480 L 402 215 L 414 502 L 460 490 C 466 435, 472 370, 464 290 C 456 210, 435 130, 406 92 L 335 48 Z"
-        fill={color}
-      />
-      <path
-        d="M 165 48 L 94 92 C 65 130, 44 210, 36 290 C 28 370, 34 435, 40 490 L 86 502 L 98 215 L 98 480 L 98 524 C 98 534, 108 540, 120 540 L 380 540 C 392 540, 402 534, 402 524 L 402 480 L 402 215 L 414 502 L 460 490 C 466 435, 472 370, 464 290 C 456 210, 435 130, 406 92 L 335 48 Z"
-        fill={`url(#hoodie-body-${id})`}
-      />
-
-      {/* Inner Sleeve Seam Separation */}
-      <path d="M 98 215 L 86 502" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
-      <path d="M 402 215 L 414 502" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
-
-      {/* ── Ribbed Waistband Hem ── */}
-      <rect x="98" y="480" width="304" height="60" rx="3" fill="#000" opacity={dark ? 0.15 : 0.05} />
-      <path d="M 98 480 L 402 480" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-      <path d="M 98 540 L 402 540" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
-
-      {/* Full-Sleeve Ribbed Wrist Cuffs */}
-      <g id="ribbed-wrist-cuffs">
-        {/* Left cuff */}
-        <rect x="38" y="488" width="48" height="24" rx="2" fill="#000" opacity={dark ? 0.18 : 0.06} transform="rotate(14, 40, 490)" />
-        <path d="M 40 490 L 86 502" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
-        <path d="M 42 502 L 88 514" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.8} />
-
-        {/* Right cuff */}
-        <rect x="414" y="488" width="48" height="24" rx="2" fill="#000" opacity={dark ? 0.18 : 0.06} transform="rotate(-14, 460, 490)" />
-        <path d="M 460 490 L 414 502" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
-        <path d="M 458 502 L 412 514" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.8} />
-      </g>
-
-      {/* Kangaroo Pouch Pocket (Front View Only) */}
-      {!isBack && (
-        <g id="kangaroo-pocket">
+  if (isSleeve) {
+    const isLeft = view === 'sleeve_left'
+    return (
+      <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <g transform={isLeft ? 'translate(0,0)' : 'translate(500,0) scale(-1,1)'}>
           <path
-            d="M 140 330 L 175 330 C 180 330, 185 334, 188 340 L 205 385 L 295 385 L 312 340 C 315 334, 320 330, 325 330 L 360 330 C 365 330, 370 335, 368 340 L 350 480 L 150 480 L 132 340 C 130 335, 135 330, 140 330 Z"
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
             fill={color}
           />
           <path
-            d="M 140 330 L 175 330 C 180 330, 185 334, 188 340 L 205 385 L 295 385 L 312 340 C 315 334, 320 330, 325 330 L 360 330 C 365 330, 370 335, 368 340 L 350 480 L 150 480 L 132 340 C 130 335, 135 330, 140 330 Z"
-            fill="#000" opacity={dark ? 0.20 : 0.06}
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
+            fill="black" opacity={dark ? 0.15 : 0.05}
           />
-          {/* Pocket edge topstitching */}
+          <rect x="155" y="425" width="210" height="40" fill="#000" opacity={dark ? 0.18 : 0.06} />
+          <path d="M 155 425 L 365 425" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+          <path d="M 155 465 L 365 465" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+        </g>
+        {children}
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <defs>
+        {/* Soft ground contact shadow */}
+        <filter id={`hoodie-shadow-${id}`} x="-15%" y="-10%" width="130%" height="135%">
+          <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#000" floodOpacity={dark ? 0.28 : 0.09} />
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity={dark ? 0.16 : 0.06} />
+        </filter>
+        {/* Subtle fleece body lighting gradient */}
+        <linearGradient id={`hoodie-body-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity={dark ? 0.09 : 0.85} />
+          <stop offset="45%" stopColor="#FFFFFF" stopOpacity={dark ? 0.03 : 0.15} />
+          <stop offset="100%" stopColor="#000000" stopOpacity={dark ? 0.28 : 0.12} />
+        </linearGradient>
+        {/* Ribbing texture for waistband & cuffs */}
+        <pattern id={`hoodie-ribs-${id}`} width="4" height="8" patternUnits="userSpaceOnUse">
+          <line x1="1" y1="0" x2="1" y2="8" stroke={strokeColor} strokeWidth="0.8" strokeOpacity={dark ? 0.25 : 0.18} />
+        </pattern>
+      </defs>
+
+      {/* ── Floor Contact Shadow ── */}
+      <path
+        d="M 176 138 C 155 80, 200 28, 250 26 C 300 28, 345 80, 324 138 L 404 168 C 438 185, 464 250, 464 340 C 464 425, 458 480, 454 506 L 408 516 L 382 470 L 382 528 L 118 528 L 118 470 L 92 516 L 46 506 C 42 480, 36 425, 36 340 C 36 250, 62 185, 96 168 Z"
+        fill="#000000" opacity={dark ? 0.22 : 0.08} transform="translate(0, 12)" filter={`url(#hoodie-shadow-${id})`}
+      />
+
+      {/* ── Hood (Back Layer in Front View, Full Drape in Back View) ── */}
+      {/* Outer Hood Contour Arch */}
+      <path
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138 Z"
+        fill={color}
+      />
+      <path
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138 Z"
+        fill={`url(#hoodie-body-${id})`}
+      />
+      <path
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138"
+        stroke={strokeColor}
+        strokeWidth="1.5"
+        strokeOpacity={strokeOpacity}
+        strokeLinecap="round"
+      />
+
+      {/* Inner Hood Cavity & Neckline Trim (Front View Only) */}
+      {!isBack ? (
+        <g id="inner-hood-opening">
+          {/* Inner hood depth opening */}
           <path
-            d="M 140 330 L 175 330 L 205 385 L 295 385 L 325 330 L 360 330"
-            stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity}
+            d="M 194 138 C 184 92, 218 64, 250 64 C 282 64, 316 92, 306 138 Z"
+            fill={innerHoodFill}
           />
-          <path d="M 150 480 L 350 480" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+          {/* Inner hood drop shadow */}
+          <path
+            d="M 194 138 C 184 92, 218 64, 250 64 C 282 64, 316 92, 306 138 Z"
+            fill="#000"
+            opacity={dark ? 0.45 : 0.20}
+          />
+          {/* Front crossover neckline collar lapels */}
+          <path
+            d="M 186 142 C 218 152, 250 152, 276 146"
+            stroke={strokeColor}
+            strokeWidth="2.2"
+            strokeOpacity={strokeOpacity}
+            strokeLinecap="round"
+          />
+          <path
+            d="M 314 142 C 282 152, 250 152, 224 146"
+            stroke={strokeColor}
+            strokeWidth="2.2"
+            strokeOpacity={strokeOpacity}
+            strokeLinecap="round"
+          />
+          {/* Subtle hood neck grommets (drawstrings kept neat at neck, chest 100% clean) */}
+          <circle cx="228" cy="144" r="2.5" fill={dark ? '#333338' : '#D0CDC5'} stroke={strokeColor} strokeWidth="0.8" strokeOpacity={strokeOpacity} />
+          <circle cx="272" cy="144" r="2.5" fill={dark ? '#333338' : '#D0CDC5'} stroke={strokeColor} strokeWidth="0.8" strokeOpacity={strokeOpacity} />
+          {/* Short neat drawstring cord tips resting at neck */}
+          <path d="M 228 147 Q 227 154, 226 156" stroke="#DCD9D0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 272 147 Q 273 154, 274 156" stroke="#DCD9D0" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      ) : (
+        /* Rear hood drape fold in Back View */
+        <g id="back-hood-drape">
+          <path
+            d="M 176 138 C 196 116, 250 114, 324 138"
+            stroke={strokeColor}
+            strokeWidth="1.8"
+            strokeOpacity={strokeOpacity}
+          />
+          <path
+            d="M 200 128 C 224 110, 276 110, 300 128"
+            stroke={strokeColor}
+            strokeWidth="1.2"
+            strokeOpacity={strokeOpacity * 0.7}
+          />
         </g>
       )}
 
-      {/* ── 3D Volumetric Hood Construction ── */}
-      <g id="hood-layer">
-        {/* Generous hood arch rising gracefully behind neck */}
+      {/* ── Main Fleece Body (Torso & Sleeves) ── */}
+      <g id="hoodie-fleece-body">
+        {/* Base Fleece Silhouette */}
         <path
-          d="M 175 56 C 185 10, 220 -8, 270 -8 C 320 -8, 355 10, 365 56 C 335 105, 205 105, 175 56 Z"
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138 Z"
           fill={color}
+        />
+        {/* Shading overlay */}
+        <path
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138 Z"
+          fill={`url(#hoodie-body-${id})`}
+        />
+
+        {/* Outer contour stroke */}
+        <path
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138"
           stroke={strokeColor}
           strokeWidth="1.4"
           strokeOpacity={strokeOpacity}
+          strokeLinejoin="round"
         />
-        {/* Inner hood opening & cavity depth shadow */}
-        {!isBack && (
-          <g id="inner-hood">
-            <path
-              d="M 200 62 C 220 86, 320 86, 340 62 C 325 106, 215 106, 200 62 Z"
-              fill="#000"
-              opacity={dark ? 0.45 : 0.22}
-            />
-            {/* Front neck crossover lapels */}
-            <path
-              d="M 195 66 C 235 96, 305 96, 345 66"
-              stroke={strokeColor}
-              strokeWidth="2.5"
-              strokeOpacity={strokeOpacity}
-            />
-          </g>
-        )}
+
+        {/* Underarm inner sleeve separation seams */}
+        <path d="M 118 235 L 88 492" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.75} />
+        <path d="M 382 235 L 412 492" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.75} />
+
+        {/* Ergonomic arm crease lines */}
+        <g stroke={strokeColor} strokeWidth="1" strokeOpacity={seamOpacity * 1.8} strokeLinecap="round">
+          <path d="M 70 250 C 85 270, 102 285, 114 290" />
+          <path d="M 52 350 C 68 365, 88 375, 104 378" />
+          <path d="M 430 250 C 415 270, 398 285, 386 290" />
+          <path d="M 448 350 C 432 365, 412 375, 396 378" />
+        </g>
       </g>
 
-      {/* ── Braided Drawstrings with Metal Aglets (Front View Only) ── */}
-      {!isBack && (
-        <g id="drawstrings">
-          {/* Left string */}
-          <path d="M 238 88 Q 232 145, 226 215" stroke="#E2E0D8" strokeWidth="3.2" strokeLinecap="round" />
-          <path d="M 238 88 Q 232 145, 226 215" stroke="#999" strokeWidth="1" strokeDasharray="2 1" />
-          <rect x="223" y="215" width="6.5" height="14" rx="1.5" fill="#DCDCE2" stroke="#444" strokeWidth="0.6" />
+      {/* ── Ribbed Waistband Hem ── */}
+      <g id="ribbed-waistband">
+        <rect x="118" y="470" width="264" height="58" rx="2" fill={color} />
+        <rect x="118" y="470" width="264" height="58" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+        <rect x="118" y="470" width="264" height="58" rx="2" fill={`url(#hoodie-ribs-${id})`} />
+        {/* Double-needle waistband attachment seam */}
+        <path d="M 118 470 L 382 470" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        <path d="M 118 474 L 382 474" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+        {/* Bottom edge */}
+        <path d="M 118 528 L 382 528" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+      </g>
 
-          {/* Right string */}
-          <path d="M 302 88 Q 308 145, 314 215" stroke="#E2E0D8" strokeWidth="3.2" strokeLinecap="round" />
-          <path d="M 302 88 Q 308 145, 314 215" stroke="#999" strokeWidth="1" strokeDasharray="2 1" />
-          <rect x="311" y="215" width="6.5" height="14" rx="1.5" fill="#DCDCE2" stroke="#444" strokeWidth="0.6" />
+      {/* ── Ribbed Wrist Cuffs ── */}
+      <g id="ribbed-wrist-cuffs">
+        {/* Left cuff */}
+        <g transform="rotate(13, 42, 482)">
+          <rect x="38" y="480" width="50" height="26" rx="2" fill={color} />
+          <rect x="38" y="480" width="50" height="26" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+          <rect x="38" y="480" width="50" height="26" rx="2" fill={`url(#hoodie-ribs-${id})`} />
+          <path d="M 38 480 L 88 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+          <path d="M 38 506 L 88 506" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        </g>
+        {/* Right cuff */}
+        <g transform="rotate(-13, 458, 482)">
+          <rect x="412" y="480" width="50" height="26" rx="2" fill={color} />
+          <rect x="412" y="480" width="50" height="26" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+          <rect x="412" y="480" width="50" height="26" rx="2" fill={`url(#hoodie-ribs-${id})`} />
+          <path d="M 412 480 L 462 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+          <path d="M 412 506 L 462 506" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        </g>
+      </g>
+
+      {/* ── Kangaroo Pouch Pocket (Front View Only) ── */}
+      {!isBack && (
+        <g id="kangaroo-pouch-pocket">
+          {/* Base pocket fill */}
+          <path
+            d="M 182 315 L 318 315 C 326 315, 332 320, 336 326 L 368 388 C 371 394, 370 402, 370 410 L 370 470 L 130 470 L 130 410 C 130 402, 129 394, 132 388 L 164 326 C 168 320, 174 315, 182 315 Z"
+            fill={color}
+          />
+          {/* Pocket shading */}
+          <path
+            d="M 182 315 L 318 315 C 326 315, 332 320, 336 326 L 368 388 C 371 394, 370 402, 370 410 L 370 470 L 130 470 L 130 410 C 130 402, 129 394, 132 388 L 164 326 C 168 320, 174 315, 182 315 Z"
+            fill="#000"
+            opacity={dark ? 0.20 : 0.06}
+          />
+          {/* Top edge double-needle stitch */}
+          <path d="M 182 315 L 318 315" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+          <path d="M 182 319 L 318 319" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          {/* Slanted side hand entry welt seams */}
+          <path d="M 182 315 L 132 388" stroke={strokeColor} strokeWidth="1.6" strokeOpacity={strokeOpacity} />
+          <path d="M 186 317 L 136 390" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          <path d="M 318 315 L 368 388" stroke={strokeColor} strokeWidth="1.6" strokeOpacity={strokeOpacity} />
+          <path d="M 314 317 L 364 390" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          {/* Hand opening shadow depth */}
+          <path d="M 132 388 L 130 470" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
+          <path d="M 368 388 L 370 470" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
+          {/* Bottom pocket seam */}
+          <path d="M 130 470 L 370 470" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
         </g>
       )}
-
-      {/* Outer contour stroke */}
-      <path
-        d="M 165 48 L 94 92 C 60 115, 34 150, 24 186 C 18 206, 32 216, 48 214 L 92 206 L 98 480 L 98 524 C 98 534, 108 540, 120 540 L 380 540 C 392 540, 402 534, 402 524 L 402 480 L 408 206 L 452 214 C 468 216, 482 206, 476 186 C 466 150, 440 115, 406 92 L 335 48 Z"
-        stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity}
-      />
 
       {/* Print area */}
       {showPrintArea && (
         <rect
-          x="156"
-          y={isBack ? 130 : 130}
-          width="188"
-          height={isBack ? 280 : 180}
+          x={isBack ? 150 : 157}
+          y={isBack ? 137 : 168}
+          width={isBack ? 200 : 186}
+          height={isBack ? 234 : 136}
           rx="3"
           stroke="#3B82F6"
           strokeWidth="1.2"
@@ -701,7 +799,7 @@ export function ToteMockup({
   const strokeOpacity = dark ? 0.6 : 0.22
 
   return (
-    <svg viewBox="0 0 500 580" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         <filter id={`tote-shadow-${id}`} x="-15%" y="-10%" width="130%" height="135%">
           <feDropShadow dx="0" dy="16" stdDeviation="18" floodColor="#000" floodOpacity={dark ? 0.25 : 0.10} />
@@ -713,50 +811,50 @@ export function ToteMockup({
       </defs>
 
       {/* Floor shadow */}
-      <rect x="75" y="165" width="350" height="380" rx="6" fill="#000" opacity={0.08} transform="translate(0, 14)" filter={`url(#tote-shadow-${id})`} />
+      <rect x="70" y="215" width="360" height="305" rx="8" fill="#000" opacity={0.08} transform="translate(0, 16)" filter={`url(#tote-shadow-${id})`} />
 
-      {/* ── Twill Webbing Handles (Looping up) ── */}
-      {/* Back handle */}
-      <path d="M 170 170 C 170 30, 210 20, 250 20 C 290 20, 330 30, 330 170" stroke={color} strokeWidth="18" strokeLinecap="round" />
-      <path d="M 170 170 C 170 30, 210 20, 250 20 C 290 20, 330 30, 330 170" stroke="#000" strokeWidth="18" strokeLinecap="round" opacity="0.12" />
-      <path d="M 170 170 C 170 30, 210 20, 250 20 C 290 20, 330 30, 330 170" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+      {/* ── Twill Webbing Handles (Looping up with natural drape) ── */}
+      {/* Back handle (resting behind bag opening) */}
+      <path d="M 170 205 C 170 24, 210 18, 250 18 C 290 18, 330 24, 330 205" stroke={color} strokeWidth="18" strokeLinecap="round" />
+      <path d="M 170 205 C 170 24, 210 18, 250 18 C 290 18, 330 24, 330 205" stroke="#000" strokeWidth="18" strokeLinecap="round" opacity="0.14" />
+      <path d="M 170 205 C 170 24, 210 18, 250 18 C 290 18, 330 24, 330 205" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
 
-      {/* ── Tote Body ── */}
+      {/* ── Tote Canvas Body ── */}
       <path
-        d="M 80 170 L 65 520 C 65 535, 75 545, 90 545 L 410 545 C 425 545, 435 535, 435 520 L 420 170 Z"
+        d="M 86 205 L 75 505 C 75 518, 85 526, 98 526 L 402 526 C 415 526, 425 518, 425 505 L 414 205 Z"
         fill={color}
       />
       <path
-        d="M 80 170 L 65 520 C 65 535, 75 545, 90 545 L 410 545 C 425 545, 435 535, 435 520 L 420 170 Z"
+        d="M 86 205 L 75 505 C 75 518, 85 526, 98 526 L 402 526 C 415 526, 425 518, 425 505 L 414 205 Z"
         fill={`url(#tote-grad-${id})`}
       />
 
       {/* Top hem fold & double needle stitch */}
-      <rect x="79" y="170" width="342" height="26" fill="#000" opacity={dark ? 0.20 : 0.05} />
-      <line x1="79" y1="196" x2="421" y2="196" stroke={strokeColor} strokeWidth="1" strokeDasharray="3 2" strokeOpacity={strokeOpacity} />
+      <rect x="85" y="205" width="330" height="24" rx="1" fill="#000" opacity={dark ? 0.20 : 0.05} />
+      <line x1="85" y1="227" x2="415" y2="227" stroke={strokeColor} strokeWidth="1" strokeDasharray="3 2" strokeOpacity={strokeOpacity} />
 
-      {/* Front handle */}
-      <path d="M 165 195 C 165 55, 205 45, 250 45 C 295 45, 335 55, 335 195" stroke={color} strokeWidth="18" strokeLinecap="round" />
-      <path d="M 165 195 C 165 55, 205 45, 250 45 C 295 45, 335 55, 335 195" stroke="#000" strokeWidth="18" strokeLinecap="round" opacity={dark ? 0.15 : 0.04} />
-      <path d="M 165 195 C 165 55, 205 45, 250 45 C 295 45, 335 55, 335 195" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+      {/* Front handle (anchored on front bag panel) */}
+      <path d="M 166 215 C 166 38, 208 30, 250 30 C 292 30, 334 38, 334 215" stroke={color} strokeWidth="18" strokeLinecap="round" />
+      <path d="M 166 215 C 166 38, 208 30, 250 30 C 292 30, 334 38, 334 215" stroke="#000" strokeWidth="18" strokeLinecap="round" opacity={dark ? 0.15 : 0.04} />
+      <path d="M 166 215 C 166 38, 208 30, 250 30 C 292 30, 334 38, 334 215" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
 
       {/* Reinforced Box-X stitches at handle bases */}
       {/* Left box */}
-      <rect x="157" y="174" width="16" height="20" fill="none" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
-      <line x1="157" y1="174" x2="173" y2="194" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
-      <line x1="173" y1="174" x2="157" y2="194" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <rect x="158" y="207" width="16" height="20" fill="none" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <line x1="158" y1="207" x2="174" y2="227" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <line x1="174" y1="207" x2="158" y2="227" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
       {/* Right box */}
-      <rect x="327" y="174" width="16" height="20" fill="none" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
-      <line x1="327" y1="174" x2="343" y2="194" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
-      <line x1="343" y1="174" x2="327" y2="194" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <rect x="326" y="207" width="16" height="20" fill="none" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <line x1="326" y1="207" x2="342" y2="227" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
+      <line x1="342" y1="207" x2="326" y2="227" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity * 1.5} />
 
       {/* Bottom corner gusset seams */}
-      <path d="M 65 520 L 100 545" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
-      <path d="M 435 520 L 400 545" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
+      <path d="M 75 505 L 108 526" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
+      <path d="M 425 505 L 392 526" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
 
       {/* Outer outline */}
       <path
-        d="M 80 170 L 65 520 C 65 535, 75 545, 90 545 L 410 545 C 425 545, 435 535, 435 520 L 420 170 Z"
+        d="M 86 205 L 75 505 C 75 518, 85 526, 98 526 L 402 526 C 415 526, 425 518, 425 505 L 414 205 Z"
         stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity}
       />
 
@@ -1375,91 +1473,258 @@ export function ZipHoodieMockup({
   const id = useId().replace(/:/g, '')
   const dark = isColorDark(color)
   const isBack = view === 'back'
-  const strokeColor = dark ? '#4A4A52' : '#1A1A12'
-  const strokeOpacity = dark ? 0.6 : 0.25
+  const isSleeve = view === 'sleeve_left' || view === 'sleeve_right'
+
+  const strokeColor = dark ? '#4E5058' : '#1A1A12'
+  const strokeOpacity = dark ? 0.65 : 0.28
+  const seamOpacity = dark ? 0.40 : 0.16
+  const innerHoodFill = dark ? '#131316' : '#D5D1C7'
+
+  if (isSleeve) {
+    const isLeft = view === 'sleeve_left'
+    return (
+      <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <g transform={isLeft ? 'translate(0,0)' : 'translate(500,0) scale(-1,1)'}>
+          <path
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
+            fill={color}
+          />
+          <path
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
+            fill="black" opacity={dark ? 0.15 : 0.05}
+          />
+          <rect x="155" y="425" width="210" height="40" fill="#000" opacity={dark ? 0.18 : 0.06} />
+          <path d="M 155 425 L 365 425" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+          <path d="M 155 465 L 365 465" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+        </g>
+        {children}
+      </svg>
+    )
+  }
 
   return (
-    <svg viewBox="0 0 500 580" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
+        {/* Soft ground contact shadow */}
         <filter id={`ziphoodie-shadow-${id}`} x="-15%" y="-10%" width="130%" height="135%">
-          <feDropShadow dx="0" dy="16" stdDeviation="18" floodColor="#000" floodOpacity={dark ? 0.28 : 0.10} />
+          <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#000" floodOpacity={dark ? 0.28 : 0.09} />
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity={dark ? 0.16 : 0.06} />
         </filter>
+        {/* Subtle fleece body lighting gradient */}
         <linearGradient id={`ziphoodie-body-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity={dark ? 0.10 : 0.85} />
-          <stop offset="50%" stopColor="#FFFFFF" stopOpacity={dark ? 0.03 : 0.15} />
-          <stop offset="100%" stopColor="#000000" stopOpacity={dark ? 0.30 : 0.14} />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity={dark ? 0.09 : 0.85} />
+          <stop offset="45%" stopColor="#FFFFFF" stopOpacity={dark ? 0.03 : 0.15} />
+          <stop offset="100%" stopColor="#000000" stopOpacity={dark ? 0.28 : 0.12} />
         </linearGradient>
+        {/* Ribbing texture for waistband & cuffs */}
+        <pattern id={`ziphoodie-ribs-${id}`} width="4" height="8" patternUnits="userSpaceOnUse">
+          <line x1="1" y1="0" x2="1" y2="8" stroke={strokeColor} strokeWidth="0.8" strokeOpacity={dark ? 0.25 : 0.18} />
+        </pattern>
       </defs>
 
-      {/* Floor shadow */}
+      {/* ── Floor Contact Shadow ── */}
       <path
-        d="M 160 40 L 90 90 C 60 130, 40 210, 32 290 C 24 370, 30 435, 36 492 L 84 506 L 98 215 L 105 540 L 395 540 L 402 215 L 416 506 L 464 492 C 470 435, 476 370, 468 290 C 460 210, 440 130, 410 90 L 340 40 Z"
-        fill="#000" opacity={dark ? 0.24 : 0.08} transform="translate(0, 14)" filter={`url(#ziphoodie-shadow-${id})`}
+        d="M 176 138 C 155 80, 200 28, 250 26 C 300 28, 345 80, 324 138 L 404 168 C 438 185, 464 250, 464 340 C 464 425, 458 480, 454 506 L 408 516 L 382 470 L 382 528 L 118 528 L 118 470 L 92 516 L 46 506 C 42 480, 36 425, 36 340 C 36 250, 62 185, 96 168 Z"
+        fill="#000000" opacity={dark ? 0.22 : 0.08} transform="translate(0, 12)" filter={`url(#ziphoodie-shadow-${id})`}
       />
 
-      {/* Main Fleece Body (Full-Length Sleeves) */}
+      {/* ── Hood Construction ── */}
+      {/* Outer Hood Contour Arch */}
       <path
-        d="M 165 48 L 94 92 C 65 130, 44 210, 36 290 C 28 370, 34 435, 40 490 L 86 502 L 98 215 L 98 480 L 98 524 C 98 534, 108 540, 120 540 L 380 540 C 392 540, 402 534, 402 524 L 402 480 L 402 215 L 414 502 L 460 490 C 466 435, 472 370, 464 290 C 456 210, 435 130, 406 92 L 335 48 Z"
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138 Z"
         fill={color}
       />
       <path
-        d="M 165 48 L 94 92 C 65 130, 44 210, 36 290 C 28 370, 34 435, 40 490 L 86 502 L 98 215 L 98 480 L 98 524 C 98 534, 108 540, 120 540 L 380 540 C 392 540, 402 534, 402 524 L 402 480 L 402 215 L 414 502 L 460 490 C 466 435, 472 370, 464 290 C 456 210, 435 130, 406 92 L 335 48 Z"
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138 Z"
         fill={`url(#ziphoodie-body-${id})`}
       />
+      <path
+        d="M 176 138 C 154 78, 196 28, 250 26 C 304 28, 346 78, 324 138"
+        stroke={strokeColor}
+        strokeWidth="1.5"
+        strokeOpacity={strokeOpacity}
+        strokeLinecap="round"
+      />
 
-      {/* Inner Sleeve Seam Separation */}
-      <path d="M 98 215 L 86 502" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
-      <path d="M 402 215 L 414 502" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
-
-      {/* Ribbed Wrist Cuffs */}
-      <path d="M 40 490 L 86 502" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
-      <path d="M 460 490 L 414 502" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
-
-      {/* Full-Length Front Metallic Zipper Track (Front View Only) */}
-      {!isBack && (
-        <g id="center-zip-track">
-          <line x1="250" y1="88" x2="250" y2="540" stroke="#1A1A1A" strokeWidth="6" />
-          <line x1="250" y1="88" x2="250" y2="540" stroke="#C8C8CE" strokeWidth="2.5" strokeDasharray="3 1" />
-          <rect x="246" y="110" width="8" height="14" rx="1.5" fill="#E2E2E8" stroke="#555" strokeWidth="0.8" />
+      {/* Inner Hood Cavity & Neckline (Front View Only) */}
+      {!isBack ? (
+        <g id="zip-inner-hood-opening">
+          <path
+            d="M 194 138 C 184 92, 218 64, 250 64 C 282 64, 316 92, 306 138 Z"
+            fill={innerHoodFill}
+          />
+          <path
+            d="M 194 138 C 184 92, 218 64, 250 64 C 282 64, 316 92, 306 138 Z"
+            fill="#000"
+            opacity={dark ? 0.45 : 0.20}
+          />
+          {/* Subtle hood neck grommets */}
+          <circle cx="228" cy="144" r="2.5" fill={dark ? '#333338' : '#D0CDC5'} stroke={strokeColor} strokeWidth="0.8" strokeOpacity={strokeOpacity} />
+          <circle cx="272" cy="144" r="2.5" fill={dark ? '#333338' : '#D0CDC5'} stroke={strokeColor} strokeWidth="0.8" strokeOpacity={strokeOpacity} />
+          {/* Short neat drawstring cord tips */}
+          <path d="M 228 147 Q 227 154, 226 156" stroke="#DCD9D0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 272 147 Q 273 154, 274 156" stroke="#DCD9D0" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      ) : (
+        /* Rear hood drape fold in Back View */
+        <g id="back-hood-drape">
+          <path
+            d="M 176 138 C 196 116, 250 114, 324 138"
+            stroke={strokeColor}
+            strokeWidth="1.8"
+            strokeOpacity={strokeOpacity}
+          />
+          <path
+            d="M 200 128 C 224 110, 276 110, 300 128"
+            stroke={strokeColor}
+            strokeWidth="1.2"
+            strokeOpacity={strokeOpacity * 0.7}
+          />
         </g>
       )}
 
-      {/* Split Kangaroo Pockets */}
-      {!isBack && (
-        <g id="split-kangaroo-pockets">
-          <path d="M 140 345 L 175 345 C 180 345, 184 348, 186 352 L 202 390 L 246 390 L 246 480 L 150 480 L 132 355 C 130 350, 135 345, 140 345 Z" fill={color} stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-          <path d="M 360 345 L 325 345 C 320 345, 316 348, 314 352 L 298 390 L 254 390 L 254 480 L 350 480 L 368 355 C 370 350, 365 345, 360 345 Z" fill={color} stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-        </g>
-      )}
+      {/* ── Main Fleece Body (Torso & Sleeves) ── */}
+      <g id="ziphoodie-fleece-body">
+        {/* Base Fleece Silhouette */}
+        <path
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138 Z"
+          fill={color}
+        />
+        {/* Shading overlay */}
+        <path
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138 Z"
+          fill={`url(#ziphoodie-body-${id})`}
+        />
 
-      {/* ── 3D Hood Construction ── */}
-      <g id="hood-structure">
-        <path d="M 165 48 C 175 18, 205 0, 250 0 C 295 0, 325 18, 335 48 C 300 90, 200 90, 165 48 Z" fill={color} stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-        {!isBack && <ellipse cx="250" cy="58" rx="55" ry="32" fill="#000" opacity={dark ? 0.45 : 0.20} />}
+        {/* Outer contour stroke */}
+        <path
+          d="M 176 138 L 96 168 C 65 185, 42 245, 36 330 C 30 405, 36 460, 42 482 L 88 492 L 118 235 L 118 470 L 382 470 L 382 235 L 412 492 L 458 482 C 464 460, 470 405, 464 330 C 458 245, 435 185, 404 168 L 324 138"
+          stroke={strokeColor}
+          strokeWidth="1.4"
+          strokeOpacity={strokeOpacity}
+          strokeLinejoin="round"
+        />
+
+        {/* Underarm inner sleeve separation seams */}
+        <path d="M 118 235 L 88 492" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.75} />
+        <path d="M 382 235 L 412 492" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.75} />
+
+        {/* Ergonomic arm crease lines */}
+        <g stroke={strokeColor} strokeWidth="1" strokeOpacity={seamOpacity * 1.8} strokeLinecap="round">
+          <path d="M 70 250 C 85 270, 102 285, 114 290" />
+          <path d="M 52 350 C 68 365, 88 375, 104 378" />
+          <path d="M 430 250 C 415 270, 398 285, 386 290" />
+          <path d="M 448 350 C 432 365, 412 375, 396 378" />
+        </g>
       </g>
 
-      {/* Braided Drawstrings */}
+      {/* ── Ribbed Waistband Hem ── */}
+      <g id="zip-ribbed-waistband">
+        <rect x="118" y="470" width="264" height="58" rx="2" fill={color} />
+        <rect x="118" y="470" width="264" height="58" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+        <rect x="118" y="470" width="264" height="58" rx="2" fill={`url(#ziphoodie-ribs-${id})`} />
+        {/* Double-needle waistband attachment seam */}
+        <path d="M 118 470 L 382 470" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        <path d="M 118 474 L 382 474" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+        {/* Bottom edge */}
+        <path d="M 118 528 L 382 528" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+      </g>
+
+      {/* ── Ribbed Wrist Cuffs ── */}
+      <g id="zip-ribbed-wrist-cuffs">
+        {/* Left cuff */}
+        <g transform="rotate(13, 42, 482)">
+          <rect x="38" y="480" width="50" height="26" rx="2" fill={color} />
+          <rect x="38" y="480" width="50" height="26" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+          <rect x="38" y="480" width="50" height="26" rx="2" fill={`url(#ziphoodie-ribs-${id})`} />
+          <path d="M 38 480 L 88 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+          <path d="M 38 506 L 88 506" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        </g>
+        {/* Right cuff */}
+        <g transform="rotate(-13, 458, 482)">
+          <rect x="412" y="480" width="50" height="26" rx="2" fill={color} />
+          <rect x="412" y="480" width="50" height="26" rx="2" fill="#000" opacity={dark ? 0.18 : 0.05} />
+          <rect x="412" y="480" width="50" height="26" rx="2" fill={`url(#ziphoodie-ribs-${id})`} />
+          <path d="M 412 480 L 462 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+          <path d="M 412 506 L 462 506" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+        </g>
+      </g>
+
+      {/* ── Split Kangaroo Pockets (Front View Only) ── */}
       {!isBack && (
-        <g id="zip-drawstrings">
-          <path d="M 220 76 Q 215 130, 210 190" stroke="#EEE" strokeWidth="3" strokeLinecap="round" />
-          <rect x="207" y="190" width="6" height="12" rx="1.5" fill="#888" stroke="#333" strokeWidth="0.5" />
-          <path d="M 280 76 Q 285 130, 290 190" stroke="#EEE" strokeWidth="3" strokeLinecap="round" />
-          <rect x="287" y="190" width="6" height="12" rx="1.5" fill="#888" stroke="#333" strokeWidth="0.5" />
+        <g id="split-kangaroo-pockets">
+          {/* Right pouch (wearer's right, screen left) */}
+          <path
+            d="M 182 315 L 244 315 L 244 470 L 130 470 L 130 410 C 130 402, 129 394, 132 388 L 164 326 C 168 320, 174 315, 182 315 Z"
+            fill={color}
+          />
+          <path
+            d="M 182 315 L 244 315 L 244 470 L 130 470 L 130 410 C 130 402, 129 394, 132 388 L 164 326 C 168 320, 174 315, 182 315 Z"
+            fill="#000"
+            opacity={dark ? 0.20 : 0.06}
+          />
+          <path d="M 182 315 L 244 315" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+          <path d="M 182 315 L 132 388" stroke={strokeColor} strokeWidth="1.6" strokeOpacity={strokeOpacity} />
+          <path d="M 186 317 L 136 390" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          <path d="M 132 388 L 130 470" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
+          <path d="M 130 470 L 244 470" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+
+          {/* Left pouch (wearer's left, screen right) */}
+          <path
+            d="M 256 315 L 318 315 C 326 315, 332 320, 336 326 L 368 388 C 371 394, 370 402, 370 410 L 370 470 L 256 470 Z"
+            fill={color}
+          />
+          <path
+            d="M 256 315 L 318 315 C 326 315, 332 320, 336 326 L 368 388 C 371 394, 370 402, 370 410 L 370 470 L 256 470 Z"
+            fill="#000"
+            opacity={dark ? 0.20 : 0.06}
+          />
+          <path d="M 256 315 L 318 315" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+          <path d="M 318 315 L 368 388" stroke={strokeColor} strokeWidth="1.6" strokeOpacity={strokeOpacity} />
+          <path d="M 314 317 L 364 390" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          <path d="M 368 388 L 370 470" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity * 0.7} />
+          <path d="M 256 470 L 370 470" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
         </g>
       )}
 
-      {/* Ribbed Waistband & Cuffs */}
-      <rect x="98" y="480" width="304" height="60" rx="3" fill="#000" opacity={dark ? 0.15 : 0.05} />
-      <path d="M 98 480 L 402 480" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-      <path d="M 98 540 L 402 540" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+      {/* ── Authentic Full-Length Center Zipper Divider (Front View Only) ── */}
+      {!isBack && (
+        <g id="authentic-center-zipper">
+          {/* Zipper welt tape backing (fabric edge) */}
+          <rect x="246" y="140" width="8" height="388" fill={dark ? '#18181C' : '#DDD8CE'} />
+          <line x1="246" y1="140" x2="246" y2="528" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
+          <line x1="254" y1="140" x2="254" y2="528" stroke={strokeColor} strokeWidth="1" strokeOpacity={strokeOpacity} />
+          {/* Parallel topstitching along zipper insertion welt */}
+          <line x1="243" y1="142" x2="243" y2="528" stroke={strokeColor} strokeWidth="0.7" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          <line x1="257" y1="142" x2="257" y2="528" stroke={strokeColor} strokeWidth="0.7" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+
+          {/* Interlocking Metallic Teeth track */}
+          <line x1="250" y1="140" x2="250" y2="528" stroke="#222" strokeWidth="2.5" />
+          <line x1="250" y1="140" x2="250" y2="528" stroke="#DCDCE2" strokeWidth="1.8" strokeDasharray="2 1.5" />
+
+          {/* Realistic Metallic Slider & Pull-Tab near collar */}
+          <g id="zipper-slider-pull">
+            {/* Slider diamond body */}
+            <rect x="245" y="152" width="10" height="13" rx="2" fill="#C5C5CC" stroke="#333338" strokeWidth="0.9" />
+            <rect x="246.5" y="153.5" width="7" height="10" rx="1" fill="#E8E8EE" />
+            {/* Pull tab neck loop */}
+            <circle cx="250" cy="165" r="1.8" fill="#555" />
+            {/* Pull tab body */}
+            <rect x="247" y="166" width="6" height="14" rx="1.5" fill="#B0B0B8" stroke="#333" strokeWidth="0.8" />
+            <rect x="248" y="167" width="4" height="12" rx="1" fill="#D5D5DE" />
+            {/* Cutout hole in pull-tab */}
+            <rect x="248.5" y="174" width="3" height="4" rx="0.8" fill="#555" />
+          </g>
+        </g>
+      )}
 
       {/* Print area */}
       {showPrintArea && (
         <rect
-          x={isBack ? 156 : 272}
-          y={isBack ? 130 : 155}
-          width={isBack ? 188 : 80}
-          height={isBack ? 280 : 80}
+          x={isBack ? 150 : 261}
+          y={isBack ? 137 : 166}
+          width={isBack ? 200 : 88}
+          height={isBack ? 234 : 88}
           rx="3"
           stroke="#3B82F6"
           strokeWidth="1.2"
@@ -1498,19 +1763,28 @@ export function LongSleeveMockup({
   if (isSleeve) {
     const isLeft = view === 'sleeve_left'
     return (
-      <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-        <g transform={isLeft ? 'translate(0,0)' : 'translate(500,0) scale(-1,1)'}>
+      <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <defs>
+          <filter id={`ls-sleeve-shadow-${id}`} x="-10%" y="-10%" width="125%" height="130%">
+            <feDropShadow dx="0" dy="12" stdDeviation="14" floodColor="#000" floodOpacity="0.10" />
+          </filter>
+        </defs>
+        <g transform={isLeft ? 'translate(0, 20)' : 'translate(500, 20) scale(-1,1)'}>
           <path
-            d="M 160 70 C 210 60, 270 65, 340 90 L 365 410 C 365 425, 355 435, 340 435 L 180 435 C 165 435, 155 425, 155 410 Z"
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
             fill={color}
           />
           <path
-            d="M 160 70 C 210 60, 270 65, 340 90 L 365 410 C 365 425, 355 435, 340 435 L 180 435 C 165 435, 155 425, 155 410 Z"
+            d="M 160 70 C 210 60, 270 65, 340 90 L 365 440 C 365 455, 355 465, 340 465 L 180 465 C 165 465, 155 455, 155 440 Z"
             fill="black" opacity={dark ? 0.15 : 0.05}
           />
-          <rect x="155" y="395" width="210" height="40" fill="#000" opacity={dark ? 0.18 : 0.06} />
-          <path d="M 155 395 L 365 395" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
-          <path d="M 155 435 L 365 435" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+          {/* Shoulder cap seam */}
+          <path d="M 160 70 C 210 60, 270 65, 340 90" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
+          {/* Ribbed wrist cuff */}
+          <rect x="155" y="425" width="210" height="40" fill="#000" opacity={dark ? 0.18 : 0.06} />
+          <path d="M 155 425 L 365 425" stroke={strokeColor} strokeWidth="1.2" strokeOpacity={strokeOpacity} />
+          <path d="M 155 429 L 365 429" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+          <path d="M 155 465 L 365 465" stroke={strokeColor} strokeWidth="1.5" strokeOpacity={strokeOpacity} />
         </g>
         {children}
       </svg>
@@ -1524,9 +1798,9 @@ export function LongSleeveMockup({
     color.toUpperCase() === '#9A9A8E'
 
   return (
-    <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg viewBox="0 0 500 560" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
-        {/* Heather Knitted Cotton Grain Shader (Matching Image 2 Sport Grey) */}
+        {/* Knitted cotton grain shader */}
         <filter id={`longsleeve-heather-${id}`} x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.92 0.52" numOctaves="3" result="noise" />
           <feColorMatrix type="matrix" values="0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.22 0" result="heatherNoise" />
@@ -1535,127 +1809,161 @@ export function LongSleeveMockup({
         </filter>
 
         <filter id={`longsleeve-shadow-${id}`} x="-15%" y="-10%" width="130%" height="135%">
-          <feDropShadow dx="0" dy="14" stdDeviation="14" floodColor="#1A1A12" floodOpacity={dark ? 0.24 : 0.08} />
+          <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#1A1A12" floodOpacity={dark ? 0.24 : 0.08} />
           <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#1A1A12" floodOpacity={dark ? 0.14 : 0.05} />
         </filter>
+
+        {/* Ribbing texture for wrist cuffs */}
+        <pattern id={`longsleeve-ribs-${id}`} width="4" height="8" patternUnits="userSpaceOnUse">
+          <line x1="1" y1="0" x2="1" y2="8" stroke={strokeColor} strokeWidth="0.8" strokeOpacity={dark ? 0.25 : 0.18} />
+        </pattern>
       </defs>
 
       {/* Floor Contact Shadow */}
       <path
-        d="M 118 80 L 38 173 C 20 198, 9 232, 8 256 C 7 285, 12 315, 23 332 L 28 356 L 62 356 L 68 332 C 78 305, 90 259, 106 232 L 117 415 L 361 415 L 372 232 C 388 259, 400 305, 410 332 L 416 356 L 450 356 L 455 332 C 466 315, 471 285, 470 256 C 469 232, 458 198, 440 173 L 360 80 L 276 46 L 203 46 Z"
+        d="M 115 105 L 38 480 L 34 508 L 80 508 L 84 480 L 140 484 L 140 512 L 360 512 L 360 484 L 416 480 L 420 508 L 466 508 L 462 480 L 385 105 L 300 56 L 200 56 Z"
         fill="#000000"
-        opacity={dark ? 0.20 : 0.05}
-        transform="translate(0, 10)"
+        opacity={dark ? 0.20 : 0.06}
+        transform="translate(0, 12)"
         filter={`url(#longsleeve-shadow-${id})`}
       />
 
-      {/* Garment Base Body (Matching Image 1 & Image 2) */}
+      {/* Garment Base Body */}
       <g id={`longsleeve-base-${id}`} filter={isHeather ? `url(#longsleeve-heather-${id})` : undefined}>
         {/* Torso Base */}
         <path
-          d="M 203 46 C 222 41, 256 41, 276 46 L 360 80 L 361 212 L 361 415 L 117 415 L 117 212 L 118 80 Z"
+          d="M 200 56 C 220 51, 280 51, 300 56 L 385 105 L 356 198 L 360 486 L 140 486 L 144 198 L 115 105 Z"
           fill={color}
         />
-        {/* Left Sleeve (Ergonomic outward branch with elbow curve) */}
+        {/* Left Full-Length Sleeve (Sculpted with natural drape to wrist) */}
         <path
-          d="M 118 80 C 95 105, 59 149, 38 173 C 20 198, 9 232, 8 256 C 7 285, 12 315, 23 332 L 28 356 L 62 356 L 68 332 C 78 305, 90 259, 106 232 C 115 220, 117 212, 117 212 Z"
+          d="M 115 105 C 88 140, 52 210, 36 295 C 26 355, 28 420, 38 480 L 84 480 C 78 420, 94 340, 115 275 C 130 230, 144 198, 144 198 Z"
           fill={color}
         />
-        {/* Right Sleeve (Ergonomic outward branch with elbow curve) */}
+        {/* Right Full-Length Sleeve (Sculpted with natural drape to wrist) */}
         <path
-          d="M 360 80 C 383 105, 419 149, 440 173 C 458 198, 469 232, 470 256 C 471 285, 466 315, 455 332 L 450 356 L 416 356 L 410 332 C 400 305, 388 259, 372 232 C 363 220, 361 212, 361 212 Z"
+          d="M 385 105 C 412 140, 448 210, 464 295 C 474 355, 472 420, 462 480 L 416 480 C 422 420, 406 340, 385 275 C 370 230, 356 198, 356 198 Z"
           fill={color}
+        />
+
+        {/* Shading overlay */}
+        <path
+          d="M 200 56 L 385 105 L 462 480 L 416 480 L 360 486 L 140 486 L 84 480 L 38 480 L 115 105 Z"
+          fill="#000"
+          opacity={dark ? 0.08 : 0.03}
         />
       </g>
 
-      {/* Inner Neck Crescent (Back Neck Cavity) */}
+      {/* Inner Neck Crescent (Front View Only) */}
       {!isBack && (
-        <path
-          d="M 203 46 C 212 68, 266 68, 276 46 C 259 41, 220 41, 203 46 Z"
-          fill={innerNeckFill}
-          stroke={strokeColor}
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
+        <g id="inner-ls-neck">
+          <path
+            d="M 200 56 C 205 90, 295 90, 300 56 C 280 51, 220 51, 200 56 Z"
+            fill={innerNeckFill}
+            stroke={strokeColor}
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          {/* Inner Brand Tape */}
+          <path d="M 215 54 C 235 52, 265 52, 285 54" stroke={neckTapeColor} strokeWidth="3" strokeLinecap="round" />
+          <text x="250" y="70" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={dark ? '#666' : '#888'} letterSpacing="0.8" fontFamily="Inter, sans-serif">
+            PRINTFLOW
+          </text>
+          <text x="250" y="78" textAnchor="middle" fontSize="5.5" fontWeight="500" fill={dark ? '#555' : '#AAA'} fontFamily="Inter, sans-serif">
+            100% COTTON · L
+          </text>
+        </g>
       )}
 
-      {/* Technical Apparel Crease & Fold Lines (Exact Match to Image 1) */}
-      <g stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={strokeOpacity * 2.8}>
-        {/* Left Sleeve Arm Folds */}
-        <path d="M 55 176 C 71 188, 94 204, 106 212" />
-        <path d="M 21 247 C 37 253, 63 260, 78 254" />
-        <path d="M 22 276 C 39 286, 61 287, 76 279" />
-        <path d="M 117 212 C 121 222, 126 234, 128 244" strokeWidth="1.2" opacity={seamOpacity * 2.5} />
-
-        {/* Right Sleeve Arm Folds */}
-        <path d="M 424 176 C 408 188, 385 204, 372 212" />
-        <path d="M 458 247 C 442 253, 415 260, 401 254" />
-        <path d="M 457 276 C 440 286, 418 287, 403 279" />
-        <path d="M 361 212 C 357 222, 352 234, 350 244" strokeWidth="1.2" opacity={seamOpacity * 2.5} />
+      {/* Ergonomic Sleeve Folds */}
+      <g stroke={strokeColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity={strokeOpacity * 2.2}>
+        {/* Left Sleeve Folds */}
+        <path d="M 52 240 C 68 252, 90 262, 108 268" />
+        <path d="M 40 330 C 56 340, 78 348, 96 352" />
+        <path d="M 36 410 C 50 418, 68 424, 82 426" />
+        {/* Right Sleeve Folds */}
+        <path d="M 448 240 C 432 252, 410 262, 392 268" />
+        <path d="M 460 330 C 444 340, 422 348, 404 352" />
+        <path d="M 464 410 C 450 418, 432 424, 418 426" />
       </g>
 
-      {/* Technical Silhouette Outlines (Stroke #1A1A12, 2.0px - 2.5px) */}
-      <g stroke={strokeColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        {/* Left Sleeve Outer Line */}
-        <path d="M 118 80 C 95 105, 59 149, 38 173 C 20 198, 9 232, 8 256 C 7 285, 12 315, 23 332" />
-        {/* Left Wrist Ribbed Cuff */}
-        <path d="M 23 332 L 28 356 L 62 356 L 68 332" />
-        <path d="M 23 332 L 68 332" strokeWidth="1.8" />
-        {/* Left Sleeve Inner Line */}
-        <path d="M 68 332 C 78 305, 90 259, 106 232 C 115 220, 117 212, 117 212" />
-
+      {/* Technical Garment Outlines */}
+      <g stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" strokeOpacity={strokeOpacity}>
+        {/* Left Sleeve Outer */}
+        <path d="M 115 105 C 88 140, 52 210, 36 295 C 26 355, 28 420, 38 480" />
+        {/* Left Inner Seam */}
+        <path d="M 84 480 C 78 420, 94 340, 115 275 C 130 230, 144 198, 144 198" />
         {/* Left Shoulder Seam */}
-        <path d="M 118 80 C 124 117, 126 166, 117 212" strokeWidth="1.8" />
-        {/* Left Shoulder Line */}
-        <path d="M 203 46 L 118 80" />
+        <path d="M 115 105 C 124 135, 128 170, 144 198" strokeWidth="1.3" strokeDasharray="4 2" strokeOpacity={seamOpacity * 2} />
+        {/* Left Shoulder Top */}
+        <path d="M 200 56 L 115 105" />
 
-        {/* Left Torso Side */}
-        <path d="M 117 212 L 117 415" />
+        {/* Torso Sides */}
+        <path d="M 144 198 L 140 486" />
+        <path d="M 356 198 L 360 486" />
 
-        {/* Bottom Waist Hem Line & Double-Needle Stitch */}
-        <path d="M 117 415 L 361 415" />
-        <path d="M 117 409 L 361 409" strokeWidth="1" strokeDasharray="4 3" strokeOpacity={seamOpacity * 2.5} />
+        {/* Bottom Waist Hem */}
+        <path d="M 140 486 L 360 486" />
+        <path d="M 140 512 L 360 512" strokeWidth="1.4" />
+        <path d="M 140 490 L 360 490" strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity * 2} />
 
-        {/* Right Torso Side */}
-        <path d="M 361 212 L 361 415" />
-
+        {/* Right Shoulder Top */}
+        <path d="M 300 56 L 385 105" />
         {/* Right Shoulder Seam */}
-        <path d="M 360 80 C 354 117, 352 166, 361 212" strokeWidth="1.8" />
-        {/* Right Shoulder Line */}
-        <path d="M 276 46 L 360 80" />
-
-        {/* Right Sleeve Outer Line */}
-        <path d="M 360 80 C 383 105, 419 149, 440 173 C 458 198, 469 232, 470 256 C 471 285, 466 315, 455 332" />
-        {/* Right Wrist Ribbed Cuff */}
-        <path d="M 455 332 L 450 356 L 416 356 L 410 332" />
-        <path d="M 455 332 L 410 332" strokeWidth="1.8" />
-        {/* Right Sleeve Inner Line */}
-        <path d="M 410 332 C 400 305, 388 259, 372 232 C 363 220, 361 212, 361 212" />
-
-        {/* Crewneck Ribbed Collar Front Band */}
-        {!isBack ? (
-          <>
-            <path d="M 203 46 C 205 78, 273 78, 276 46" strokeWidth="2.2" fill={dark ? '#222225' : '#D8D5CF'} />
-            <path d="M 198 46 C 200 88, 278 88, 281 46" strokeWidth="1.8" />
-          </>
-        ) : (
-          <path d="M 203 46 C 212 55, 266 55, 276 46" strokeWidth="2.2" fill={dark ? '#222225' : '#D8D5CF'} />
-        )}
+        <path d="M 385 105 C 376 135, 372 170, 356 198" strokeWidth="1.3" strokeDasharray="4 2" strokeOpacity={seamOpacity * 2} />
+        {/* Right Inner Seam */}
+        <path d="M 416 480 C 422 420, 406 340, 385 275 C 370 230, 356 198, 356 198" />
+        {/* Right Sleeve Outer */}
+        <path d="M 385 105 C 412 140, 448 210, 464 295 C 474 355, 472 420, 462 480" />
       </g>
 
-      {/* Print area guide (12" x 16" dashed bounding box matching Image 1) */}
+      {/* ── Ribbed Wrist Cuffs ── */}
+      {/* Left Cuff */}
+      <g id="longsleeve-left-cuff">
+        <rect x="34" y="480" width="50" height="28" rx="2" fill={color} />
+        <rect x="34" y="480" width="50" height="28" rx="2" fill="#000" opacity={dark ? 0.16 : 0.04} />
+        <rect x="34" y="480" width="50" height="28" rx="2" fill={`url(#longsleeve-ribs-${id})`} />
+        <path d="M 34 480 L 84 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+        <path d="M 34 484 L 84 484" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+        <path d="M 34 508 L 84 508" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+      </g>
+
+      {/* Right Cuff */}
+      <g id="longsleeve-right-cuff">
+        <rect x="416" y="480" width="50" height="28" rx="2" fill={color} />
+        <rect x="416" y="480" width="50" height="28" rx="2" fill="#000" opacity={dark ? 0.16 : 0.04} />
+        <rect x="416" y="480" width="50" height="28" rx="2" fill={`url(#longsleeve-ribs-${id})`} />
+        <path d="M 416 480 L 466 480" stroke={strokeColor} strokeWidth="1.3" strokeOpacity={strokeOpacity} />
+        <path d="M 416 484 L 466 484" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+        <path d="M 416 508 L 466 508" stroke={strokeColor} strokeWidth="1.4" strokeOpacity={strokeOpacity} />
+      </g>
+
+      {/* ── Crewneck Ribbed Collar ── */}
+      {!isBack ? (
+        <g id="longsleeve-crew-collar">
+          <path d="M 200 56 C 202 88, 298 88, 300 56" stroke={strokeColor} strokeWidth="2.2" strokeOpacity={strokeOpacity} fill={dark ? '#222225' : '#D8D5CF'} />
+          <path d="M 196 56 C 198 94, 302 94, 304 56" stroke={strokeColor} strokeWidth="1.6" strokeOpacity={strokeOpacity} />
+          <path d="M 198 60 C 200 90, 300 90, 302 60" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="3 2" strokeOpacity={seamOpacity} />
+        </g>
+      ) : (
+        <g id="longsleeve-back-collar">
+          <path d="M 200 56 C 215 68, 285 68, 300 56" stroke={strokeColor} strokeWidth="2.2" strokeOpacity={strokeOpacity} fill={dark ? '#222225' : '#D8D5CF'} />
+        </g>
+      )}
+
+      {/* Print area guide */}
       {showPrintArea && (
         <rect
           x="156"
-          y={isBack ? 115 : 125}
-          width="168"
-          height={isBack ? 245 : 230}
-          rx="2"
-          stroke="#1A1A12"
-          strokeWidth="1.5"
-          strokeDasharray="6 5"
+          y={isBack ? 125 : 145}
+          width="188"
+          height={isBack ? 260 : 240}
+          rx="3"
+          stroke="#3B82F6"
+          strokeWidth="1.2"
+          strokeDasharray="5 4"
           fill="none"
-          opacity="0.9"
+          opacity="0.85"
         />
       )}
 

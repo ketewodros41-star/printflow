@@ -24,9 +24,6 @@ import {
   RealisticProductPreview,
   renderLayersInSvg,
   PrintMethod,
-  PhotorealisticStudioCanvas,
-  getPhotorealisticBlank,
-  isColorDark,
 } from '@/components/mockups/RealisticFlatLay'
 import { ProductionExportModal } from '@/components/mockups/ProductionExportModal'
 import { calculateLayerDpi } from '@/lib/production/dpiCalculator'
@@ -710,6 +707,7 @@ export default function ProductCreatorPage() {
   // Map print area name to mockup view prop
   const normArea = activePrintArea.toLowerCase()
   const isSleeve = normArea.includes('sleeve')
+  const isHandle = normArea.includes('handle')
   const mockupView = normArea.includes('all')
     ? 'all'
     : normArea.includes('under')
@@ -724,9 +722,13 @@ export default function ProductCreatorPage() {
               ? 'sleeve_left'
               : isSleeve && normArea.includes('right')
                 ? 'sleeve_right'
-                : normArea.includes('wrap')
-                  ? 'wrap'
-                  : 'front'
+                : isHandle && normArea.includes('left')
+                  ? 'handle_left'
+                  : isHandle && normArea.includes('right')
+                    ? 'handle_right'
+                    : normArea.includes('wrap')
+                      ? 'wrap'
+                      : 'front'
 
   const selected = layers.find(l => l.id === selectedId) ?? null
 
@@ -2015,34 +2017,25 @@ export default function ProductCreatorPage() {
                   className="relative rounded-2xl overflow-visible transition-all duration-200"
                   style={{
                     width: activePrintArea.toLowerCase().includes('all') ? 780 : 500,
-                    height: activePrintArea.toLowerCase().includes('all') ? 405 : 500
+                    height: activePrintArea.toLowerCase().includes('all') ? 405 : 560
                   }}
                   onClick={() => setSelectedId(null)}>
 
-                  {/* ── Photorealistic Raw Product Studio Mockup Underlay ── */}
+                  {/* ── 2D Vector Blueprint Canvas Underlay (Clean Printify-Style Blueprint) ── */}
                   <div className={cn(
                     'absolute inset-0',
                     activePrintArea.toLowerCase().includes('all') ? 'pointer-events-auto' : 'pointer-events-none'
                   )}>
-                    {activePrintArea.toLowerCase().includes('all') ? (
-                      <MockupComponent
-                        color={productColor}
-                        view={mockupView}
-                        className="w-full h-full"
-                        showPrintArea={false}
-                        onSelectArea={(area) => {
-                          setActivePrintArea(area)
-                          setSelectedId(null)
-                        }}
-                      />
-                    ) : (
-                      <PhotorealisticStudioCanvas
-                        productType={info.type}
-                        view={mockupView}
-                        color={productColor}
-                        className="w-full h-full"
-                      />
-                    )}
+                    <MockupComponent
+                      color={productColor}
+                      view={mockupView}
+                      className="w-full h-full"
+                      showPrintArea={false}
+                      onSelectArea={(area) => {
+                        setActivePrintArea(area)
+                        setSelectedId(null)
+                      }}
+                    />
                   </div>
 
                   {/* ── Calibrated Print Area Guide (Hidden on All Areas Overview) ── */}
@@ -2528,7 +2521,7 @@ export default function ProductCreatorPage() {
                                 title="Fit to print area">
                                 Fit Area
                               </button>
-                              {['tshirt', 'sweatshirt', 'jacket', 'hoodie', 'hoodie-zip'].includes(info.type) && (
+                              {['tshirt', 'sweatshirt', 'jacket', 'hoodie', 'hoodie-zip', 'longsleeve'].includes(info.type) && (
                                 <>
                                   <div className="w-[1px] h-3 bg-white/20 mx-0.5" />
                                   <button
@@ -2571,27 +2564,7 @@ export default function ProductCreatorPage() {
                     )
                   })}
 
-                  {/* ── Fabric Fold & Surface Crease Realistic Passthrough Overlay ── */}
-                  {currentViewLayers.length > 0 && !activePrintArea.toLowerCase().includes('all') && (() => {
-                    const blank = getPhotorealisticBlank(info.type, mockupView, productColor)
-                    const isDarkGarment = isColorDark(productColor)
-                    return (
-                      <div
-                        className="absolute inset-0 pointer-events-none select-none overflow-hidden rounded-2xl"
-                        style={{
-                          mixBlendMode: 'soft-light',
-                          opacity: isDarkGarment ? 0.22 : 0.16,
-                        }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={blank.assetUrl}
-                          alt=""
-                          className="w-full h-full object-contain pointer-events-none"
-                        />
-                      </div>
-                    )
-                  })()}
+
                 </div>
               </div>
             </div>
@@ -2760,62 +2733,102 @@ export default function ProductCreatorPage() {
                 </div>
               ) : (
                 <div className="flex items-center bg-white border border-[#E5E2DC] shadow-sm rounded-xl p-1 gap-1">
-                  <button
-                    onClick={() => {
-                      setActivePrintArea(info.printAreas[0])
-                      setSelectedId(null)
-                    }}
-                    className={cn(
-                      'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                      activePrintArea === info.printAreas[0]
-                        ? 'bg-[#575C46] text-white shadow-xs'
-                        : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
-                    )}>
-                    <span>Front side</span>
-                    {layers.some(l => (l.view === info.printAreas[0] || l.view.includes('Front') || l.view.includes('Center') || l.view.includes('Chest')) && l.visible) && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActivePrintArea('Back')
-                      setSelectedId(null)
-                    }}
-                    className={cn(
-                      'px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                      activePrintArea === 'Back'
-                        ? 'bg-[#575C46] text-white shadow-xs'
-                        : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
-                    )}>
-                    <span>Back side</span>
-                    {layers.some(l => (l.view === 'Back' || l.view.includes('Back')) && l.visible) && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    )}
-                  </button>
-                  {info.printAreas.length > 2 && (
-                    <div className="relative group">
+                  {info.printAreas.length <= 4 ? (
+                    info.printAreas.map(area => {
+                      const isActive = activePrintArea.toLowerCase() === area.toLowerCase()
+                      const hasLayers = layers.some(l => l.view.toLowerCase() === area.toLowerCase() && l.visible)
+                      return (
+                        <button
+                          key={area}
+                          onClick={() => {
+                            setActivePrintArea(area)
+                            setSelectedId(null)
+                          }}
+                          className={cn(
+                            'px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap',
+                            isActive
+                              ? 'bg-[#575C46] text-white shadow-xs'
+                              : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white hover:bg-[#F5F4F0]'
+                          )}>
+                          <span>{area}</span>
+                          {hasLayers && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                        </button>
+                      )
+                    })
+                  ) : (
+                    <>
                       <button
-                        className="px-3 py-2 rounded-lg text-xs font-semibold text-[#6E6B65] hover:text-[#1A1A12] flex items-center gap-1 hover:bg-[#F5F4F0]">
-                        <span>More ({info.printAreas.length - 2})</span>
-                        <ChevronDown size={12} />
+                        onClick={() => {
+                          setActivePrintArea(info.printAreas[0])
+                          setSelectedId(null)
+                        }}
+                        className={cn(
+                          'px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                          activePrintArea === info.printAreas[0]
+                            ? 'bg-[#575C46] text-white shadow-xs'
+                            : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
+                        )}>
+                        <span>Front side</span>
+                        {layers.some(l => (l.view === info.printAreas[0] || l.view.includes('Front') || l.view.includes('Center') || l.view.includes('Chest')) && l.visible) && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        )}
                       </button>
-                      <div className="absolute bottom-full left-0 mb-1 hidden group-hover:flex flex-col bg-white border border-[#E5E2DC] rounded-xl shadow-lg p-1 min-w-[140px] z-30">
-                        {info.printAreas.slice(2).map(area => (
-                          <button
-                            key={area}
-                            onClick={() => {
-                              setActivePrintArea(area)
-                              setSelectedId(null)
-                            }}
-                            className={cn(
-                              'px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors',
-                              activePrintArea === area ? 'bg-[#575C46] text-white' : 'text-[#1A1A12] hover:bg-[#F5F4F0]'
-                            )}>
-                            {area}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+
+                      {info.printAreas.some(a => a.toLowerCase().includes('back')) && (
+                        <button
+                          onClick={() => {
+                            const backArea = info.printAreas.find(a => a.toLowerCase() === 'back') || info.printAreas.find(a => a.toLowerCase().includes('back')) || 'Back'
+                            setActivePrintArea(backArea)
+                            setSelectedId(null)
+                          }}
+                          className={cn(
+                            'px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                            activePrintArea.toLowerCase().includes('back') && !activePrintArea.toLowerCase().includes('collar')
+                              ? 'bg-[#575C46] text-white shadow-xs'
+                              : 'text-[#6E6B65] hover:text-[#1A1A12] bg-white'
+                          )}>
+                          <span>Back side</span>
+                          {layers.some(l => (l.view === 'Back' || l.view.includes('Back')) && l.visible) && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          )}
+                        </button>
+                      )}
+
+                      {(() => {
+                        const frontArea = info.printAreas[0]
+                        const backArea = info.printAreas.find(a => a.toLowerCase() === 'back')
+                        const otherAreas = info.printAreas.filter(a => a !== frontArea && a !== backArea)
+                        if (otherAreas.length === 0) return null
+                        return (
+                          <div className="relative group">
+                            <button
+                              className="px-3 py-2 rounded-lg text-xs font-semibold text-[#6E6B65] hover:text-[#1A1A12] flex items-center gap-1 hover:bg-[#F5F4F0]">
+                              <span>More ({otherAreas.length})</span>
+                              <ChevronDown size={12} />
+                            </button>
+                            <div className="absolute bottom-full left-0 mb-1 hidden group-hover:flex flex-col bg-white border border-[#E5E2DC] rounded-xl shadow-lg p-1 min-w-[140px] z-30">
+                              {otherAreas.map(area => (
+                                <button
+                                  key={area}
+                                  onClick={() => {
+                                    setActivePrintArea(area)
+                                    setSelectedId(null)
+                                  }}
+                                  className={cn(
+                                    'px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors flex items-center justify-between',
+                                    activePrintArea === area ? 'bg-[#575C46] text-white' : 'text-[#1A1A12] hover:bg-[#F5F4F0]'
+                                  )}>
+                                  <span>{area}</span>
+                                  {layers.some(l => l.view.toLowerCase() === area.toLowerCase() && l.visible) && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </>
                   )}
                 </div>
               )}
