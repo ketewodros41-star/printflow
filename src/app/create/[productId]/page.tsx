@@ -10,8 +10,9 @@ import {
   ZoomIn, ZoomOut, Move, Maximize2, RotateCw, Eye, EyeOff,
   Copy, Lock, Unlock, Download, Check, Layers as LayersIcon,
   Search, Sliders, SlidersHorizontal, Palette, RefreshCw, FlipHorizontal,
-  Table2, AlertTriangle, ShieldCheck, Grid, Minus, Printer
+  Table2, AlertTriangle, ShieldCheck, Grid, Minus, Printer, Box
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { cn } from '@/lib/utils'
 import { MOCKUP_MAP, TShirtMockup, MockupProps } from '@/components/mockups/ProductMockups'
 import {
@@ -29,6 +30,21 @@ import { ProductionExportModal } from '@/components/mockups/ProductionExportModa
 import { calculateLayerDpi } from '@/lib/production/dpiCalculator'
 import { SAMPLE_GRAPHICS, GraphicItem } from '@/lib/sampleGraphics'
 import { SAMPLE_TEMPLATES, DesignTemplate } from '@/lib/sampleTemplates'
+
+const ThreeMockupViewer = dynamic(
+  () => import('@/components/mockups/three/ThreeMockupViewer'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full min-h-[500px] flex items-center justify-center bg-[#FAF9F6] text-[#8C8880]">
+        <div className="flex flex-col items-center gap-2.5">
+          <div className="w-8 h-8 border-2 border-[#1A1A12] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold">Initializing 3D Studio...</span>
+        </div>
+      </div>
+    ),
+  }
+)
 
 const PRINTIFY_FONTS = [
   { name: 'Impact', family: 'Impact, sans-serif' },
@@ -643,7 +659,7 @@ export default function ProductCreatorPage() {
   const [activePrintArea, setActivePrintArea] = useState(info.isAOP ? 'All areas (view only)' : info.printAreas[0])
   const [productColor,    setProductColor]    = useState(info.colors[0].hex)
   const [selectedSize,    setSelectedSize]    = useState('L')
-  const [activeTab,       setActiveTab]       = useState<'edit' | 'preview'>('edit')
+  const [activeTab,       setActiveTab]       = useState<'edit' | 'preview' | '3d'>('edit')
   const [activeTool,      setActiveTool]      = useState<string>('upload')
   const [previewScene,    setPreviewScene]    = useState<string>(mockupScenes[0].id)
   const [mockupColorMode, setMockupColorMode] = useState<'rgb' | 'cmyk'>('rgb')
@@ -1302,12 +1318,12 @@ export default function ProductCreatorPage() {
           </div>
         </div>
 
-        {/* Center: Mode Switcher [Edit] / [Preview] matching Image 1 */}
+        {/* Center: Mode Switcher [Edit] (2D Blueprint) / [Preview] (2D Photo) / [3D Studio] */}
         <div className="flex items-center gap-1 bg-[#EFECE6] p-1 rounded-xl">
           <button
             onClick={() => setActiveTab('edit')}
             className={cn(
-              'px-5 py-1.5 rounded-lg text-xs font-bold transition-all',
+              'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
               activeTab === 'edit'
                 ? 'bg-white text-[#1A1A12] shadow-xs'
                 : 'text-[#6E6B65] hover:text-[#1A1A12]'
@@ -1317,12 +1333,23 @@ export default function ProductCreatorPage() {
           <button
             onClick={() => setActiveTab('preview')}
             className={cn(
-              'px-5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+              'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
               activeTab === 'preview'
                 ? 'bg-[#3F4832] text-white shadow-xs'
                 : 'text-[#6E6B65] hover:text-[#1A1A12]'
             )}>
             <span>Preview</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('3d')}
+            className={cn(
+              'px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+              activeTab === '3d'
+                ? 'bg-[#1A1A12] text-white shadow-xs'
+                : 'text-[#6E6B65] hover:text-[#1A1A12]'
+            )}>
+            <Box size={13} />
+            <span>3D Studio</span>
           </button>
         </div>
 
@@ -1406,7 +1433,7 @@ export default function ProductCreatorPage() {
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
           {TOOLS.map(t => {
-            const isActive = activeTool === t.id && activeTab === 'edit'
+            const isActive = activeTool === t.id && (activeTab === 'edit' || activeTab === '3d')
             return (
               <button
                 key={t.id}
@@ -1433,7 +1460,7 @@ export default function ProductCreatorPage() {
         </div>
 
         {/* ── Left Secondary Drawer (Printify Tool Flyout) ──────────────────── */}
-        {activeTab === 'edit' && (
+        {(activeTab === 'edit' || activeTab === '3d') && (
           <aside className="w-[310px] bg-white border-r border-[#E5E2DC] flex flex-col shrink-0 z-10 overflow-y-auto">
             {/* 1. Upload Tool */}
             {activeTool === 'upload' && (
@@ -2682,6 +2709,24 @@ export default function ProductCreatorPage() {
               </div>
             )
           })()}
+
+          {/* ── Mode 3: 3D STUDIO MODE (WebGL Interactive PBR 3D Stage) ── */}
+          {activeTab === '3d' && (
+            <div className="flex-1 flex flex-col items-center justify-between overflow-hidden relative w-full h-full bg-[#FAF9F6]">
+              <ThreeMockupViewer
+                productType={info.type}
+                productId={productId}
+                productColor={productColor}
+                productName={info.name}
+                isHeather={info.colors.find(c => c.hex.toUpperCase() === productColor.toUpperCase())?.isHeather}
+                layers={layers}
+                printBox={currentProductAreas['Center chest'] || currentProductAreas['Front'] || printBox}
+                availableColors={info.colors}
+                onSelectColor={setProductColor}
+                className="w-full h-full flex-1"
+              />
+            </div>
+          )}
 
           {/* ── View Switcher Pills (Printify Bottom Floating Nav matching Image 2) ── */}
           {activeTab === 'edit' && (
